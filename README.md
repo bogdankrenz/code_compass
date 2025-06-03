@@ -26,8 +26,8 @@ Das Tool soll in der Lage sein, grundlegende Komplexitätsmetriken zu berechnen,
 
 ## 📚 Geplante Features
 - ✅ Einlesen von TypeScript-Dateien
-- ⏳ AST-Parsing mit Metrikberechnung
-- ⏳ Halstead- & McCabe-Metriken
+- ✅ AST-Parsing mit Metrikberechnung
+- ✅ Halstead- & McCabe-Metriken
 - ⏳ Möglichkeit zur Analyse ganzer Ordner
 - ⏳ Optional: Ausgabe als JSON oder CSV
 
@@ -76,8 +76,8 @@ The tool is designed to calculate basic code complexity metrics to support devel
 ## 📚 Planned Features
 
 - ✅ Reading TypeScript files
-- ⏳ AST parsing with metric computation
-- ⏳ Halstead & McCabe metrics
+- ✅ AST parsing with metric computation
+- ✅ Halstead & McCabe metrics
 - ⏳ Ability to analyze entire folders
 - ⏳ Optional: Output as JSON or CSV
 

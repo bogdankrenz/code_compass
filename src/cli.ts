@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { analyzeFile } from "./analyzer";
+import { analyzeFile } from "./parser/analyzer";
 
 const [, , filePath] = process.argv;
 
