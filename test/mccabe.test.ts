@@ -8,6 +8,11 @@ import {
   nestedConditions,
   switchCaseFunction,
   ternaryExpression,
+  tryCatchBlock,
+  complexLogicalExpression,
+  nestedTernary,
+  tryCatchFinally,
+  asyncFunction,
 } from "./fixtures/mccabeCases";
 
 describe("McCabe Complexity", () => {
@@ -37,5 +42,25 @@ describe("McCabe Complexity", () => {
 
   it("should return 2 for ternary expression", () => {
     expect(calculateMcCabeComplexityAST(ternaryExpression)).toBe(2);
+  });
+
+  it("should return 2 for try and catch block", () => {
+    expect(calculateMcCabeComplexityAST(tryCatchBlock)).toBe(2);
+  });
+
+  it("should return 3 for complex logical expression", () => {
+    expect(calculateMcCabeComplexityAST(complexLogicalExpression)).toBe(3);
+  });
+
+  it("should return 3 for nested ternary", () => {
+    expect(calculateMcCabeComplexityAST(nestedTernary)).toBe(3);
+  });
+
+  it("should return 3 for try catch finally", () => {
+    expect(calculateMcCabeComplexityAST(tryCatchFinally)).toBe(3);
+  });
+
+  it("should return 5 for async/await with try/catch and if", () => {
+    expect(calculateMcCabeComplexityAST(asyncFunction)).toBe(5);
   });
 });

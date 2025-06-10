@@ -10,7 +10,8 @@ export function calculateMcCabeComplexityAST(code: string): number {
   let edges = 0; // Anzahl der Kanten im Kontrollflussgraphen
 
   function visit(node: ts.Node) {
-    // Kontrollflussstrukturen erhöhen die Anzahl der Entscheidungspunkte
+    const syntaxKind = ts.SyntaxKind[node.kind];
+
     if (
       ts.isIfStatement(node) ||
       ts.isForStatement(node) ||
@@ -19,13 +20,26 @@ export function calculateMcCabeComplexityAST(code: string): number {
       ts.isCaseClause(node) ||
       ts.isDefaultClause(node) ||
       ts.isConditionalExpression(node) ||
-      ts.isCatchClause(node) ||
+      ts.isAwaitExpression(node) ||
       (ts.isBinaryExpression(node) &&
         (node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
           node.operatorToken.kind === ts.SyntaxKind.BarBarToken))
     ) {
+      console.log("Counted node:", syntaxKind);
       edges++;
     }
+
+    if (ts.isTryStatement(node)) {
+      if (node.catchClause) {
+        console.log("Counted: catch");
+        edges++;
+      }
+      if (node.finallyBlock) {
+        console.log("Counted: finally");
+        edges++;
+      }
+    }
+
     ts.forEachChild(node, visit);
   }
 

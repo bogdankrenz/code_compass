@@ -1,15 +1,29 @@
-import { Project } from "ts-morph";
+import { extractFunctionsFromFile } from "../metrics/utils";
+import { calculateMcCabeComplexityAST } from "../metrics/mccabe";
+import {
+  calculateHalsteadMetricsAST,
+  type HalsteadMetrics,
+} from "../metrics/halstead";
+
+type FunctionType = {
+  name: string;
+  code: string;
+};
+
+type MetricsResult = {
+  name: string;
+  mccabe: number;
+  halstead: HalsteadMetrics;
+};
 
 export function analyzeFile(filePath: string) {
-  const project = new Project();
-  const sourceFile = project.addSourceFileAtPath(filePath);
+  const functions = extractFunctionsFromFile(filePath);
 
-  const functions = sourceFile.getFunctions();
-  console.log(`📄 Datei: ${filePath}`);
-  console.log(`🔍 Gefundene Funktionen: ${functions.length}`);
-
-  for (const func of functions) {
-    console.log("—", func.getName() || "<anonymous>");
-    // Hier kannst du Halstead / McCabe aufrufen
-  }
+  return functions.map(
+    ({ name, code }: FunctionType): MetricsResult => ({
+      name,
+      mccabe: calculateMcCabeComplexityAST(code),
+      halstead: calculateHalsteadMetricsAST(code),
+    })
+  );
 }

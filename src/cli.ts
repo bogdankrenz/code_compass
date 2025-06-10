@@ -9,4 +9,12 @@ if (!filePath) {
   process.exit(1);
 }
 
-analyzeFile(filePath);
+const results = analyzeFile(filePath);
+
+console.log(`📄 Datei: ${filePath}`);
+results.forEach(({ name, mccabe, halstead }) => {
+  console.log(`🔧 Funktion: ${name}`);
+  console.log(`   - McCabe-Komplexität: ${mccabe}`);
+  console.log(`   - Halstead Volumen: ${halstead.volume.toFixed(2)}`);
+  console.log(`   - Halstead Aufwand: ${halstead.effort.toFixed(2)}\n`);
+});

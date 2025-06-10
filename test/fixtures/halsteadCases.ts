@@ -147,3 +147,68 @@ class Car {
     }
 }
 `;
+
+export const templateLiteral = `
+function greet(name: string) {
+    return \`Hello, \${name}!\`;
+}
+`;
+
+export const logicalNullishAssignment = `
+let config = null;
+config ??= { retries: 3 };
+`;
+
+export const spreadAndRest = `
+function sum(...numbers: number[]) {
+    return numbers.reduce((a, b) => a + b, 0);
+}
+const clone = { ...{ a: 1, b: 2 } };
+`;
+
+export const bitwiseOperations = `
+function mask(value: number) {
+    return value & 0xff;
+}
+`;
+
+export const chainedCalls = `
+const result = [1, 2, 3].map(n => n * 2).filter(n => n > 2).join(',');
+`;
+
+export const nestedTernary = `
+function category(score: number) {
+    return score > 90 ? 'A' : score > 75 ? 'B' : 'C';
+}
+`;
+
+export const tryCatchFinally = `
+function attempt() {
+    try {
+        riskyCall();
+    } catch (e) {
+        handleError(e);
+    } finally {
+        cleanUp();
+    }
+}
+`;
+
+export const objectMethodShorthand = `
+const obj = {
+    greet() {
+        return "hi";
+    }
+};
+`;
+
+export const optionalParameters = `
+function announce(message?: string) {
+    console.log(message ?? "No message");
+}
+`;
+
+export const chainedOptionalAccess = `
+const user = { preferences: { theme: "dark" } };
+const theme = user?.preferences?.theme?.toUpperCase?.();
+`;

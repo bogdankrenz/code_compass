@@ -59,3 +59,49 @@ function isEven(n: number) {
     return n % 2 === 0 ? 'even' : 'odd';
 }
 `;
+
+export const tryCatchBlock = `
+function riskyOperation() {
+    try {
+        throw new Error("Oops");
+    } catch (e) {
+        console.error(e);
+    }
+}
+`;
+
+export const complexLogicalExpression = `
+function canVote(user: { age: number, citizen: boolean }) {
+    return user.age >= 18 && user.citizen || false;
+}
+`;
+
+export const nestedTernary = `
+function getCategory(score: number) {
+    return score > 90 ? 'A' : score > 75 ? 'B' : 'C';
+}
+`;
+
+export const tryCatchFinally = `
+function safeExecute(fn: () => void) {
+    try {
+        fn();
+    } catch (e) {
+        console.error(e);
+    } finally {
+        console.log("Cleanup");
+    }
+}
+`;
+
+export const asyncFunction = `
+async function fetchData(url: string) {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Error');
+        return await res.json();
+    } catch (e) {
+        console.error(e);
+    }
+}
+`;
