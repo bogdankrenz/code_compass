@@ -2,7 +2,7 @@
 
 import type { HalsteadMetrics } from "./metrics/halstead";
 
-type FunctionLocation = {
+export type FunctionLocation = {
   startLine: number;
   endLine: number;
 };
@@ -22,7 +22,7 @@ export type FileMetrics = {
   filePath: string;
   functions: FunctionMetrics[];
   aggregate: {
-    halstead: HalsteadMetrics;
+    halstead: Partial<HalsteadMetrics>;
     mccabe: number;
     functionCount: number;
   };
