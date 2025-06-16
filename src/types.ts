@@ -13,14 +13,18 @@ export type AggregateMetrics = {
   median: number;
 };
 
+export type HalsteadAggregate = {
+  effort: AggregateMetrics;
+  volume: AggregateMetrics;
+  difficulty: AggregateMetrics;
+};
+
 // Funktions-Ebene (Func <-> Func)
 export type FunctionMetrics = {
   name: string;
-  location: FunctionLocation;
-  halstead: HalsteadMetrics;
   mccabe: number;
-  // Optional weitere Metriken in Zukunft
-  [key: string]: number | string | FunctionLocation | HalsteadMetrics;
+  halstead: Pick<HalsteadMetrics, "difficulty" | "volume" | "effort">;
+  location: FunctionLocation;
 };
 
 // Datei-Ebene (File <-> File)
@@ -28,11 +32,7 @@ export type FileMetrics = {
   filePath: string;
   functions: FunctionMetrics[];
   aggregate: {
-    halstead: {
-      effort: AggregateMetrics;
-      volume: AggregateMetrics;
-      difficulty: AggregateMetrics;
-    };
+    halstead: HalsteadAggregate;
     mccabe: AggregateMetrics;
     functionCount: number;
   };

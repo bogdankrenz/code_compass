@@ -1,5 +1,5 @@
 {
-  "name": "code-metrics-cli",
+  "name": "code_compass",
   "module": "index.ts",
   "type": "module",
   "private": true,
