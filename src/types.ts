@@ -7,6 +7,12 @@ export type FunctionLocation = {
   endLine: number;
 };
 
+export type AggregateMetrics = {
+  total: number;
+  avg: number;
+  median: number;
+};
+
 // Funktions-Ebene (Func <-> Func)
 export type FunctionMetrics = {
   name: string;
@@ -22,8 +28,12 @@ export type FileMetrics = {
   filePath: string;
   functions: FunctionMetrics[];
   aggregate: {
-    halstead: Partial<HalsteadMetrics>;
-    mccabe: number;
+    halstead: {
+      effort: AggregateMetrics;
+      volume: AggregateMetrics;
+      difficulty: AggregateMetrics;
+    };
+    mccabe: AggregateMetrics;
     functionCount: number;
   };
 };
@@ -33,8 +43,12 @@ export type DirectoryMetrics = {
   directoryPath: string;
   files: FileMetrics[];
   aggregate: {
-    halstead: HalsteadMetrics;
-    mccabe: number;
+    halstead: {
+      effort: AggregateMetrics;
+      volume: AggregateMetrics;
+      difficulty: AggregateMetrics;
+    };
+    mccabe: AggregateMetrics;
     fileCount: number;
     functionCount: number;
   };

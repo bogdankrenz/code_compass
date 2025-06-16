@@ -1,7 +1,6 @@
-import { analyzeFile } from "./analyzer";
-import type { FileMetrics, FunctionMetrics } from "../types";
+import { analyzeFile, average } from "./analyzer";
+import type { AggregateMetrics, FileMetrics, FunctionMetrics } from "../types";
 import fs from "fs";
-import path from "path";
 import type { HalsteadMetrics } from "../metrics/halstead";
 
 // Helper Function zum Lokalisieren von Funktionen
@@ -14,6 +13,24 @@ const extractFunctionsFromFile = (code: string, fileContent: string) => {
     endLine: index + codeSplitted.length,
   };
 };
+
+function computeAggregate(values: number[]): AggregateMetrics {
+  if (values.length === 0) {
+    return { total: 0, avg: 0, median: 0 };
+  }
+
+  const total = values.reduce((sum, value) => sum + value, 0);
+  const avg = total / values.length;
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  const median =
+    sorted.length % 2 === 0
+      ? (sorted[middle - 1]! + sorted[middle]!) / 2
+      : sorted[middle]!;
+
+  return { total, avg, median };
+}
 
 export function generateFileMetrics(filePath: string): FileMetrics {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -32,23 +49,18 @@ export function generateFileMetrics(filePath: string): FileMetrics {
       };
     }
   );
+  const volumeValues = functions.map((value) => value.halstead.volume);
+  const effortValues = functions.map((value) => value.halstead.effort);
+  const difficultyValues = functions.map((value) => value.halstead.difficulty);
+  const mccabeValues = functions.map((value) => value.mccabe);
 
   const aggregate = {
-    mccabe: functions.reduce((sum, fn) => sum + fn.mccabe, 0),
-    halstead: functions.reduce(
-      (acc, fn) => ({
-        ...acc,
-        volume: ((acc.volume as number) + fn.halstead.volume) as number,
-        difficulty: ((acc.difficulty as number) +
-          fn.halstead.difficulty) as number,
-        effort: ((acc.effort as number) + fn.halstead.effort) as number,
-      }),
-      {
-        volume: 0,
-        difficulty: 0,
-        effort: 0,
-      } as HalsteadMetrics
-    ),
+    mccabe: computeAggregate(mccabeValues),
+    halstead: {
+      volume: computeAggregate(volumeValues),
+      effort: computeAggregate(effortValues),
+      difficulty: computeAggregate(difficultyValues),
+    },
     functionCount: functions.length,
   };
 

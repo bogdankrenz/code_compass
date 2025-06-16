@@ -5,6 +5,7 @@ import type {
   DirectoryMetrics,
   FunctionLocation,
   FunctionMetrics,
+  AggregateMetrics,
 } from "../types";
 import {
   calculateHalsteadMetricsAST,
@@ -14,10 +15,7 @@ import {
 type FunctionType = {
   name: string;
   code: string;
-  location: {
-    start: number;
-    end: number;
-  };
+  location: FunctionLocation;
 };
 
 type MetricsResult = {
@@ -25,11 +23,6 @@ type MetricsResult = {
   mccabe: number;
   halstead: HalsteadMetrics;
   location: FunctionLocation;
-};
-
-type AggregateMetrics = {
-  avg: number;
-  median: number;
 };
 
 type FileAnalysis = {
@@ -46,7 +39,8 @@ type FileAnalysis = {
   location?: FunctionLocation;
 };
 
-function median(numbers: number[]): number {
+// TODO: Utils
+export function median(numbers: number[]): number {
   if (numbers.length === 0) return 0;
 
   const sorted = [...numbers].sort((a, b) => a - b);
@@ -56,15 +50,23 @@ function median(numbers: number[]): number {
     : sorted[mid]!;
 }
 
-function average(numbers: number[]): number {
+// TODO: Utils
+export function average(numbers: number[]): number {
   const sum = numbers.reduce((sum, val) => sum + val, 0);
   return numbers.length === 0 ? 0 : sum / numbers.length;
 }
 
+// TODO: Utils
+export function total(numbers: number[]): number {
+  return numbers.reduce((sum, value) => sum + value, 0);
+}
+
+// TODO: Utils
 function aggregateMetric(values: number[]): AggregateMetrics {
   return {
     avg: average(values),
     median: median(values),
+    total: total(values),
   };
 }
 
@@ -75,18 +77,18 @@ export function analyzeFile(filePath: string): FileAnalysis {
     return {
       results: [],
       aggregate: {
-        mccabe: { avg: 0, median: 0 },
+        mccabe: { avg: 0, median: 0, total: 0 },
         halstead: {
-          effort: { avg: 0, median: 0 },
-          volume: { avg: 0, median: 0 },
-          difficulty: { avg: 0, median: 0 },
+          effort: { avg: 0, median: 0, total: 0 },
+          volume: { avg: 0, median: 0, total: 0 },
+          difficulty: { avg: 0, median: 0, total: 0 },
         },
       },
     };
   }
 
   const results: MetricsResult[] = functions.map(
-    ({ name, code, location }): MetricsResult => ({
+    ({ name, code, location }: FunctionType): MetricsResult => ({
       name,
       mccabe: calculateMcCabeComplexityAST(code),
       halstead: calculateHalsteadMetricsAST(code),
@@ -119,7 +121,7 @@ export function analyzeDirectory(directoryPath: string): DirectoryMetrics {
       filePath,
       functions: analysis.results,
       aggregate: {
-        mccabe: analysis.aggregate.mccabe.avg,
+        mccabe: analysis.aggregate.mccabe,
         halstead: {
           effort: analysis.aggregate.halstead.effort,
           volume: analysis.aggregate.halstead.volume,
@@ -141,19 +143,23 @@ export function analyzeDirectory(directoryPath: string): DirectoryMetrics {
     files,
     aggregate: {
       mccabe: {
+        total: total(allMccabe),
         avg: average(allMccabe),
         median: median(allMccabe),
       },
       halstead: {
         effort: {
+          total: total(allEffort),
           avg: average(allEffort),
           median: median(allEffort),
         },
         volume: {
+          total: total(allVolume),
           avg: average(allVolume),
           median: median(allVolume),
         },
         difficulty: {
+          total: total(allDifficulty),
           avg: average(allDifficulty),
           median: median(allDifficulty),
         },
