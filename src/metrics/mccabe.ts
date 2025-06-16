@@ -25,17 +25,14 @@ export function calculateMcCabeComplexityAST(code: string): number {
         (node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
           node.operatorToken.kind === ts.SyntaxKind.BarBarToken))
     ) {
-      console.log("Counted node:", syntaxKind);
       edges++;
     }
 
     if (ts.isTryStatement(node)) {
       if (node.catchClause) {
-        console.log("Counted: catch");
         edges++;
       }
       if (node.finallyBlock) {
-        console.log("Counted: finally");
         edges++;
       }
     }
