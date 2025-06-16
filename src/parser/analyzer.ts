@@ -20,14 +20,11 @@ type FunctionType = {
   };
 };
 
-type MetricsResult = FunctionMetrics & {
+type MetricsResult = {
   name: string;
   mccabe: number;
   halstead: HalsteadMetrics;
-  location: {
-    start: number;
-    end: number;
-  };
+  location: FunctionLocation;
 };
 
 type AggregateMetrics = {
@@ -89,7 +86,7 @@ export function analyzeFile(filePath: string): FileAnalysis {
   }
 
   const results: MetricsResult[] = functions.map(
-    ({ name, code, location }: FunctionType): MetricsResult => ({
+    ({ name, code, location }): MetricsResult => ({
       name,
       mccabe: calculateMcCabeComplexityAST(code),
       halstead: calculateHalsteadMetricsAST(code),

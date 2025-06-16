@@ -1,11 +1,26 @@
 import * as fs from "fs";
 import * as ts from "typescript";
 import path from "path";
+import type { FunctionLocation } from "../types";
 
 type FunctionExtraction = {
   name: string;
   code: string;
+  location: FunctionLocation;
 };
+
+function getFunctionLocationFromSourceFile(
+  node: ts.Node,
+  sourceFile: ts.SourceFile
+) {
+  const start = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+  const end = sourceFile.getLineAndCharacterOfPosition(node.getEnd());
+
+  return {
+    startLine: start.line + 1,
+    endLine: end.line + 1,
+  };
+}
 
 export function extractFunctionsFromFile(
   filePath: string
@@ -25,7 +40,9 @@ export function extractFunctionsFromFile(
     if (ts.isFunctionDeclaration(node) && node.name) {
       const name = node.name.text;
       const code = node.getText(sourceFile);
-      functions.push({ name, code });
+      const location = getFunctionLocationFromSourceFile(node, sourceFile);
+
+      functions.push({ name, code, location });
     }
 
     // Arrow Functions in Variablen
@@ -38,7 +55,9 @@ export function extractFunctionsFromFile(
         ) {
           const name = decl.name.getText(sourceFile);
           const code = decl.getText(sourceFile);
-          functions.push({ name, code });
+          const location = getFunctionLocationFromSourceFile(node, sourceFile);
+
+          functions.push({ name, code, location });
         }
       });
     }
@@ -47,7 +66,9 @@ export function extractFunctionsFromFile(
     if (ts.isMethodDeclaration(node) && node.name) {
       const name = node.name.getText(sourceFile);
       const code = node.getText(sourceFile);
-      functions.push({ name, code });
+      const location = getFunctionLocationFromSourceFile(node, sourceFile);
+
+      functions.push({ name, code, location });
     }
 
     ts.forEachChild(node, visit);
