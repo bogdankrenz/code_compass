@@ -1,20 +1,7 @@
-import { analyzeFile, average } from "./analyzer";
+import { analyzeFile } from "./analyzer";
 import type { AggregateMetrics, FileMetrics, FunctionMetrics } from "../types";
-import fs from "fs";
-import type { HalsteadMetrics } from "../metrics/halstead";
 
-// Helper Function zum Lokalisieren von Funktionen
-const extractFunctionsFromFile = (code: string, fileContent: string) => {
-  const lines = fileContent.split("\n");
-  const codeSplitted = code.split("\n");
-  const index = lines.findIndex((line) => line.includes(codeSplitted[0] ?? ""));
-  return {
-    startLine: index + 1,
-    endLine: index + codeSplitted.length,
-  };
-};
-
-function computeAggregate(values: number[]): AggregateMetrics {
+export function computeAggregate(values: number[]): AggregateMetrics {
   if (values.length === 0) {
     return { total: 0, avg: 0, median: 0 };
   }
@@ -33,40 +20,24 @@ function computeAggregate(values: number[]): AggregateMetrics {
 }
 
 export function generateFileMetrics(filePath: string): FileMetrics {
-  const fileContent = fs.readFileSync(filePath, "utf-8");
-  const analyzedFunctions = analyzeFile(filePath);
+  const functions = analyzeFile(filePath);
 
-  const functions: FunctionMetrics[] = analyzedFunctions.results.map(
-    ({ name, mccabe, halstead }) => {
-      const code = ""; // Optional können wir uns den Code Snippet noch ausgeben lassen
-      const location = extractFunctionsFromFile(code, fileContent);
-
-      return {
-        name,
-        mccabe,
-        halstead,
-        location,
-      };
-    }
-  );
-  const volumeValues = functions.map((value) => value.halstead.volume);
-  const effortValues = functions.map((value) => value.halstead.effort);
-  const difficultyValues = functions.map((value) => value.halstead.difficulty);
   const mccabeValues = functions.map((value) => value.mccabe);
-
-  const aggregate = {
-    mccabe: computeAggregate(mccabeValues),
-    halstead: {
-      volume: computeAggregate(volumeValues),
-      effort: computeAggregate(effortValues),
-      difficulty: computeAggregate(difficultyValues),
-    },
-    functionCount: functions.length,
-  };
+  const effortValues = functions.map((value) => value.halstead.effort);
+  const volumeValues = functions.map((value) => value.halstead.volume);
+  const difficultyValues = functions.map((value) => value.halstead.difficulty);
 
   return {
     filePath,
     functions,
-    aggregate,
+    aggregate: {
+      mccabe: computeAggregate(mccabeValues),
+      halstead: {
+        effort: computeAggregate(effortValues),
+        volume: computeAggregate(volumeValues),
+        difficulty: computeAggregate(difficultyValues),
+      },
+      functionCount: functions.length,
+    },
   };
 }
