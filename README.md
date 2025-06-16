@@ -28,8 +28,8 @@ Das Tool soll in der Lage sein, grundlegende Komplexitätsmetriken zu berechnen,
 - ✅ Einlesen von TypeScript-Dateien
 - ✅ AST-Parsing mit Metrikberechnung
 - ✅ Halstead- & McCabe-Metriken
-- ⏳ Möglichkeit zur Analyse ganzer Ordner
-- ⏳ Optional: Ausgabe als JSON oder CSV
+- ✅ Möglichkeit zur Analyse ganzer Ordner
+- ✅ Optional: Ausgabe als JSON oder CSV
 
 ## 🔧 Tech Stack
 - Bun – Runtime & Package Manager
@@ -78,8 +78,8 @@ The tool is designed to calculate basic code complexity metrics to support devel
 - ✅ Reading TypeScript files
 - ✅ AST parsing with metric computation
 - ✅ Halstead & McCabe metrics
-- ⏳ Ability to analyze entire folders
-- ⏳ Optional: Output as JSON or CSV
+- ✅ Ability to analyze entire folders
+- ✅ Optional: Output as JSON or CSV
 
 ## 🔧 Tech Stack
 

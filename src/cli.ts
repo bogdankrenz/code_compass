@@ -20,6 +20,18 @@ import path from "path";
 
 type OutputFormat = "table" | "json" | "csv" | "all";
 
+/*
+  TODO:
+    - Stress testing with multiple big directories
+    - Improve UX
+    - Update README
+    - Additional Options:
+      - Dynamic Dir/File parsing/choosing
+      - Function Comparison only
+      - File Comparison only
+    - CSV/Excel exports
+    - Visualizer
+*/
 async function main() {
   intro(pc.cyan("📊 Code Compass"));
 
