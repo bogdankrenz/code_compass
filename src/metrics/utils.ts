@@ -101,3 +101,11 @@ export function getAllFiles(dir: string): string[] {
 
   return files;
 }
+
+export function getSubdirectories(rootPath: string): string[] {
+  if (!fs.existsSync(rootPath)) return [];
+  return fs
+    .readdirSync(rootPath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(rootPath, entry.name));
+}

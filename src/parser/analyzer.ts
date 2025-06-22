@@ -17,9 +17,7 @@ export function analyzeFile(filePath: string): FunctionMetrics[] {
   }));
 }
 
-export function analyzeDirectory(
-  directoryPath: string
-): DirectoryMetrics | null {
+export function analyzeDirectory(directoryPath: string): DirectoryMetrics {
   const filePaths = getAllFiles(directoryPath);
   const files = filePaths.map(generateFileMetrics).filter((files) => !!files);
 
