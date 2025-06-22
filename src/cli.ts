@@ -17,6 +17,7 @@ import {
   writeResultsToJson,
 } from "./output";
 import path from "path";
+import type { DirectoryMetrics } from "./types";
 
 type OutputFormat = "table" | "json" | "csv" | "all";
 
@@ -38,9 +39,9 @@ async function main() {
   const dirs = await multiselect({
     message: "📁 Welche Verzeichnisse willst du analysieren?",
     options: [
+      { label: "strapi-fork", value: "strapiv4" },
+      { label: "strapi v5", value: "strapiv5" },
       { label: "src", value: "src" },
-      { label: "test-code", value: "test-code" },
-      // Hier kannst du dynamisch Verzeichnisse einlesen, wenn du willst
     ],
     required: true,
   });
@@ -97,17 +98,20 @@ async function main() {
   const results = (dirs as string[]).map((dir) =>
     analyzeDirectory(path.resolve(dir))
   );
+  const filtered: DirectoryMetrics[] = results.filter(
+    (res) => res !== null && (res.aggregate.mccabe.avg !== null || 0)
+  );
 
   // Ausgabe
   switch (format) {
     case "table":
       if (mode === "aggregate" || mode === "both")
-        printComparisonTable(results);
+        printComparisonTable(filtered);
       if (mode === "detailed" || mode === "both")
-        printDetailedBreakdown(results);
+        printDetailedBreakdown(filtered);
       break;
     case "json":
-      writeResultsToJson(results, outputFolder);
+      writeResultsToJson(filtered, outputFolder);
       break;
     case "csv":
       console.log("🚧 CSV-Export ist bald verfügbar.");

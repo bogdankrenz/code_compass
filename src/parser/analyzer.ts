@@ -17,11 +17,22 @@ export function analyzeFile(filePath: string): FunctionMetrics[] {
   }));
 }
 
-export function analyzeDirectory(directoryPath: string): DirectoryMetrics {
+export function analyzeDirectory(
+  directoryPath: string
+): DirectoryMetrics | null {
   const filePaths = getAllFiles(directoryPath);
-  const files = filePaths.map(generateFileMetrics);
+  const files = filePaths.map(generateFileMetrics).filter((files) => !!files);
 
-  const allFunctions = files.flatMap((file) => file.functions);
+  const allFunctions = files.flatMap((file) => {
+    if (
+      file.aggregate.halstead.volume.avg > 0 &&
+      file.aggregate.mccabe.avg > 0
+    ) {
+      return file.functions;
+    } else {
+      return [];
+    }
+  });
   const allMccabe = allFunctions.map((f) => f.mccabe);
   const allEffort = allFunctions.map((f) => f.halstead.effort);
   const allVolume = allFunctions.map((f) => f.halstead.volume);

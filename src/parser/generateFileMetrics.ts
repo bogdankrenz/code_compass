@@ -2,10 +2,6 @@ import { analyzeFile } from "./analyzer";
 import type { AggregateMetrics, FileMetrics, FunctionMetrics } from "../types";
 
 export function computeAggregate(values: number[]): AggregateMetrics {
-  if (values.length === 0) {
-    return { total: 0, avg: 0, median: 0 };
-  }
-
   const total = values.reduce((sum, value) => sum + value, 0);
   const avg = total / values.length;
 
@@ -19,7 +15,7 @@ export function computeAggregate(values: number[]): AggregateMetrics {
   return { total, avg, median };
 }
 
-export function generateFileMetrics(filePath: string): FileMetrics {
+export function generateFileMetrics(filePath: string): FileMetrics | null {
   const functions = analyzeFile(filePath);
 
   const mccabeValues = functions.map((value) => value.mccabe);
@@ -27,17 +23,19 @@ export function generateFileMetrics(filePath: string): FileMetrics {
   const volumeValues = functions.map((value) => value.halstead.volume);
   const difficultyValues = functions.map((value) => value.halstead.difficulty);
 
-  return {
-    filePath,
-    functions,
-    aggregate: {
-      mccabe: computeAggregate(mccabeValues),
-      halstead: {
-        effort: computeAggregate(effortValues),
-        volume: computeAggregate(volumeValues),
-        difficulty: computeAggregate(difficultyValues),
-      },
-      functionCount: functions.length,
-    },
-  };
+  return mccabeValues.includes(0) || effortValues.includes(0)
+    ? null
+    : {
+        filePath,
+        functions,
+        aggregate: {
+          mccabe: computeAggregate(mccabeValues),
+          halstead: {
+            effort: computeAggregate(effortValues),
+            volume: computeAggregate(volumeValues),
+            difficulty: computeAggregate(difficultyValues),
+          },
+          functionCount: functions.length,
+        },
+      };
 }
