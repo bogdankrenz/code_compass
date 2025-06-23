@@ -1,7 +1,8 @@
 import * as fs from "fs";
 import * as ts from "typescript";
 import path from "path";
-import type { FunctionLocation } from "../types";
+import type { FileMetrics, FunctionLocation, FunctionMetrics } from "../types";
+import { computeAggregate } from "../parser/generateFileMetrics";
 
 type FunctionExtraction = {
   name: string;

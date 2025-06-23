@@ -10,8 +10,6 @@ export type HalsteadMetrics = {
   volume: number;
   difficulty: number;
   effort: number;
-  uniqueOperators: string[]; // Debugging purposes
-  uniqueOperands: string[]; // Debugging purposes
 };
 
 export function calculateHalsteadMetricsAST(code: string): HalsteadMetrics {
@@ -150,7 +148,5 @@ export function calculateHalsteadMetricsAST(code: string): HalsteadMetrics {
     volume,
     difficulty,
     effort,
-    uniqueOperators: [...new Set(allOperators)],
-    uniqueOperands: [...new Set(allOperands)],
   };
 }
