@@ -134,6 +134,12 @@ async function main() {
       })
       .filter((dir): dir is DirectoryMetrics => dir !== null);
 
+    cleanedDirectories.forEach((dir) => {
+      dir.files.forEach((file) => {
+        file.functions.sort((a, b) => b.mccabe - a.mccabe);
+      });
+    });
+
     switch (format) {
       case "table":
         if (mode === "aggregate" || mode === "both")
@@ -149,11 +155,6 @@ async function main() {
         break;
     }
   } else {
-    console.log(
-      pc.yellow(
-        "🚧 Der Datei-Vergleich wird im nächsten Schritt implementiert."
-      )
-    );
     const firstProject = await select({
       message: "📁 Wähle ein Projekt:",
       options: availableDirs.map((dir) => ({
@@ -195,174 +196,171 @@ async function main() {
       process.exit(1);
     }
 
-    const analyzedFiles: FileMetrics[] = (selectedFiles as string[])
-      .map((filePath) => {
-        const functions = analyzeFile(path.resolve(filePath)); // returns FunctionMetrics[] | null
-        if (!functions || functions.length === 0) return null;
+    let allFiles: FileMetrics[] = [];
 
-        const numbers = functions.map((fn) => fn.mccabe); // oder fn.halstead.volume etc.
-        const aggregate = computeAggregate(numbers); // deine bestehende Funktion
+    function analyzeFiles(filePaths: string[]): FileMetrics[] {
+      return filePaths
+        .map((filePath) => {
+          const functions = analyzeFile(path.resolve(filePath));
+          if (!functions || functions.length === 0) return null;
 
-        return {
-          filePath,
-          functions,
-          aggregate: {
-            mccabe: computeAggregate(functions.map((f) => f.mccabe)),
-            halstead: {
-              effort: computeAggregate(functions.map((f) => f.halstead.effort)),
-              volume: computeAggregate(functions.map((f) => f.halstead.volume)),
-              difficulty: computeAggregate(
-                functions.map((f) => f.halstead.difficulty)
-              ),
+          return {
+            filePath,
+            functions,
+            aggregate: {
+              mccabe: computeAggregate(functions.map((f) => f.mccabe)),
+              halstead: {
+                effort: computeAggregate(
+                  functions.map((f) => f.halstead.effort)
+                ),
+                volume: computeAggregate(
+                  functions.map((f) => f.halstead.volume)
+                ),
+                difficulty: computeAggregate(
+                  functions.map((f) => f.halstead.difficulty)
+                ),
+              },
+              functionCount: functions.length,
             },
-            functionCount: functions.length,
-          },
-        };
-      })
-      .filter((f): f is FileMetrics => f !== null);
+          };
+        })
+        .filter((f): f is FileMetrics => f !== null);
+    }
 
-    printDetailedBreakdown([
-      {
-        directoryPath: firstProject,
-        files: analyzedFiles,
+    allFiles.push(...analyzeFiles(selectedFiles));
+
+    // 📁 Optional zweites Projekt
+    const addSecond = await select({
+      message: "📁 Möchtest du Dateien aus einem zweiten Projekt analysieren?",
+      options: [
+        { label: "Ja", value: "yes" },
+        { label: "Nein", value: "no" },
+      ],
+    });
+
+    if (addSecond === "yes") {
+      const secondProject = await select({
+        message: "📁 Wähle das zweite Projekt:",
+        options: availableDirs
+          .filter((dir) => dir !== firstProject)
+          .map((dir) => ({
+            label: path.basename(dir),
+            value: dir,
+          })),
+      });
+
+      if (isCancel(secondProject)) {
+        cancel("Abgebrochen.");
+        process.exit(1);
+      }
+
+      const secondProjectFiles = getAllTsFilesRecursively(secondProject).map(
+        (filePath) => ({
+          label: path.relative(secondProject, filePath),
+          value: filePath,
+        })
+      );
+
+      const selectedSecondFiles = await multiselect({
+        message: "📄 Welche Datei(en) willst du zusätzlich analysieren?",
+        options: secondProjectFiles,
+        required: true,
+      });
+
+      if (!isCancel(selectedSecondFiles)) {
+        allFiles.push(...analyzeFiles(selectedSecondFiles as string[]));
+      }
+    }
+
+    // 📋 Ausgabeoptionen
+    const mode = await select({
+      message: "🧾 Welche Art der Ausgabe willst du?",
+      options: [
+        { value: "aggregate", label: "Nur aggregierte Werte" },
+        { value: "detailed", label: "Nur detaillierte Werte" },
+        { value: "both", label: "Beides anzeigen" },
+      ],
+    });
+
+    const format = await select<OutputFormat>({
+      message: "📤 Wie willst du das Ergebnis ausgeben?",
+      options: [
+        { value: "table", label: "Tabelle im Terminal" },
+        { value: "json", label: "Als JSON-Datei speichern" },
+        { value: "csv", label: "Als CSV-Datei speichern (bald verfügbar)" },
+      ],
+    });
+
+    let outputFolder = "";
+    if (format !== "table") {
+      const folder = await text({
+        message:
+          "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
+        placeholder: "z. B. results/",
+        validate: (input) =>
+          input.trim() === "" ? "Bitte gib einen Ordnernamen an." : undefined,
+      });
+
+      if (isCancel(folder)) {
+        cancel("Abgebrochen.");
+        process.exit(1);
+      }
+
+      outputFolder = folder;
+    }
+
+    allFiles.forEach((file) => {
+      file.functions.sort((a, b) => b.mccabe - a.mccabe);
+    });
+
+    // 📦 Ergebnisse verpacken
+    const directoryObj: DirectoryMetrics = {
+      directoryPath: "Dateivergleich",
+      files: allFiles,
+      aggregate: {
+        mccabe: computeAggregate(
+          allFiles.map((f) => f.aggregate?.mccabe.avg ?? 0)
+        ),
+        halstead: {
+          effort: computeAggregate(
+            allFiles.map((f) => f.aggregate?.halstead.effort.avg ?? 0)
+          ),
+          volume: computeAggregate(
+            allFiles.map((f) => f.aggregate?.halstead.volume.avg ?? 0)
+          ),
+          difficulty: computeAggregate(
+            allFiles.map((f) => f.aggregate?.halstead.difficulty.avg ?? 0)
+          ),
+        },
+        functionCount: allFiles.reduce(
+          (sum, f) => sum + (f.aggregate?.functionCount ?? 0),
+          0
+        ),
+        fileCount: allFiles.length,
       },
-    ]);
-    //   // TODO: Datei-Vergleich interaktiv implementieren
-    //   const firstProject = await select({
-    //     message: "📁 Wähle das erste Projekt:",
-    //     options: availableDirs.map((dir) => ({
-    //       label: path.basename(dir),
-    //       value: dir,
-    //     })),
-    //   });
+    };
 
-    //   if (isCancel(firstProject)) {
-    //     cancel("Abgebrochen.");
-    //     process.exit(1);
-    //   }
+    if (mode === "detailed" || mode === "both") {
+      directoryObj.files.forEach((file) => {
+        file.functions.sort((a, b) => b.mccabe - a.mccabe);
+      });
+    }
 
-    //   const firstProjectFiles = fs
-    //     .readdirSync(firstProject, { withFileTypes: true })
-    //     .filter((f) => f.isFile() && f.name.endsWith(".ts"))
-    //     .map((f) => ({
-    //       label: f.name,
-    //       value: path.join(firstProject, f.name),
-    //     }));
-
-    //   const selectedFiles1 = await multiselect({
-    //     message: "📄 Welche Datei(en) willst du im ersten Projekt analysieren?",
-    //     options: firstProjectFiles,
-    //     required: true,
-    //   });
-
-    //   if (isCancel(selectedFiles1)) {
-    //     cancel("Abgebrochen.");
-    //     process.exit(1);
-    //   }
-
-    //   const compareSecond = await select({
-    //     message: "📁 Möchtest du Dateien aus einem zweiten Projekt vergleichen?",
-    //     options: [
-    //       { label: "Ja", value: "yes" },
-    //       { label: "Nein", value: "no" },
-    //     ],
-    //   });
-
-    //   if (isCancel(compareSecond)) {
-    //     cancel("Abgebrochen.");
-    //     process.exit(1);
-    //   }
-
-    //   let selectedFiles2: symbol | string[] = [];
-    //   if (compareSecond === "yes") {
-    //     const secondProject = await select({
-    //       message: "📁 Wähle das zweite Projekt:",
-    //       options: availableDirs
-    //         .filter((dir) => dir !== firstProject)
-    //         .map((dir) => ({
-    //           label: path.basename(dir),
-    //           value: dir,
-    //         })),
-    //     });
-
-    //     if (isCancel(secondProject)) {
-    //       cancel("Abgebrochen.");
-    //       process.exit(1);
-    //     }
-
-    //     const secondProjectFiles = fs
-    //       .readdirSync(secondProject, { withFileTypes: true })
-    //       .filter((f) => f.isFile() && f.name.endsWith(".ts"))
-    //       .map((f) => ({
-    //         label: f.name,
-    //         value: path.join(secondProject, f.name),
-    //       }));
-
-    //     selectedFiles2 = await multiselect({
-    //       message:
-    //         "📄 Welche Datei(en) willst du im zweiten Projekt analysieren?",
-    //       options: secondProjectFiles,
-    //       required: true,
-    //     });
-
-    //     if (isCancel(selectedFiles2)) {
-    //       cancel("Abgebrochen.");
-    //       process.exit(1);
-    //     }
-    //   }
-
-    //   const format = await select<OutputFormat>({
-    //     message: "📤 Wie willst du das Ergebnis ausgeben?",
-    //     options: [
-    //       { value: "table", label: "Tabelle im Terminal" },
-    //       { value: "json", label: "Als JSON-Datei speichern" },
-    //       { value: "csv", label: "Als CSV-Datei speichern (bald verfügbar)" },
-    //     ],
-    //   });
-
-    //   if (isCancel(format)) {
-    //     cancel("Abgebrochen.");
-    //     process.exit(1);
-    //   }
-
-    //   let outputFolder = "";
-    //   if (format !== "table") {
-    //     const folder = await text({
-    //       message:
-    //         "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
-    //       placeholder: "z. B. results/",
-    //       validate: (input) =>
-    //         input.trim() === "" ? "Bitte gib einen Ordnernamen an." : undefined,
-    //     });
-
-    //     if (isCancel(folder)) {
-    //       cancel("Abgebrochen.");
-    //       process.exit(1);
-    //     }
-
-    //     outputFolder = folder;
-    //   }
-
-    //   const filesToAnalyze = [...(selectedFiles1 as string[]), ...selectedFiles2];
-    //   const analyzedFiles = filesToAnalyze
-    //     .map((file) => analyzeFile(path.resolve(file)))
-    //     .filter((file) => file !== null);
-
-    //   switch (format) {
-    //     case "table":
-    //       printDetailedBreakdown([{ directoryPath: "", files: analyzedFiles }]);
-    //       break;
-    //     case "json":
-    //       writeResultsToJson(
-    //         [{ directoryPath: "", files: analyzedFiles }],
-    //         outputFolder
-    //       );
-    //       break;
-    //     case "csv":
-    //       console.log("🚧 CSV-Export ist bald verfügbar.");
-    //       break;
-    //   }
-    // }
+    // 📊 Ausgabe
+    switch (format) {
+      case "table":
+        if (mode === "aggregate" || mode === "both")
+          printComparisonTable([directoryObj]);
+        if (mode === "detailed" || mode === "both")
+          printDetailedBreakdown([directoryObj]);
+        break;
+      case "json":
+        writeResultsToJson([directoryObj], outputFolder);
+        break;
+      case "csv":
+        console.log("🚧 CSV-Export ist bald verfügbar.");
+        break;
+    }
 
     outro(pc.green("✅ Analyse abgeschlossen!"));
   }
