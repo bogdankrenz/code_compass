@@ -44,10 +44,13 @@ export function printComparisonTable(results: DirectoryMetrics[]) {
   );
 }
 
-// TODO: Fix directoryPath/file
-export function printDetailedBreakdown(results: DirectoryMetrics[]) {
+export function printDetailedBreakdown(
+  results:
+    | DirectoryMetrics[]
+    | { directoryPath: string; files: FileMetrics[] }[]
+) {
   for (const dir of results) {
-    console.log(pc.bold(`\n📄 Datei: ${path.basename(dir.directoryPath)}:`));
+    console.log(pc.bold(`\n📄 Projekt: ${path.basename(dir.directoryPath)}:`));
     for (const file of dir.files) {
       console.log(pc.italic(`  🔧 ${file.filePath}`));
       for (const fn of file.functions) {
@@ -68,7 +71,9 @@ export function printDetailedBreakdown(results: DirectoryMetrics[]) {
 }
 
 export function writeResultsToJson(
-  results: DirectoryMetrics[],
+  results:
+    | DirectoryMetrics[]
+    | { directoryPath: string; files: FileMetrics[] }[],
   outDir: string
 ) {
   const absPath = path.resolve(outDir as string);
@@ -76,7 +81,8 @@ export function writeResultsToJson(
     fs.mkdirSync(absPath, { recursive: true });
   }
 
-  const outputPath = path.join(absPath, "metrics.json");
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const outputPath = path.join(absPath, `metrics-${timestamp}.json`);
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2), "utf-8");
   console.log(pc.green(`\n💾 Ergebnisse wurden gespeichert unter:`));
   console.log(pc.bold(outputPath));

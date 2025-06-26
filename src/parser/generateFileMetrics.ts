@@ -2,10 +2,6 @@ import { analyzeFile } from "./analyzer";
 import type { AggregateMetrics, FileMetrics, FunctionMetrics } from "../types";
 
 export function computeAggregate(values: number[]): AggregateMetrics {
-  if (values.length === 0) {
-    return { total: 0, avg: 0, median: 0 };
-  }
-
   const total = values.reduce((sum, value) => sum + value, 0);
   const avg = total / values.length;
 

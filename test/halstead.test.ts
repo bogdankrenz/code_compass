@@ -16,8 +16,6 @@ describe("Halstead: Operator/Operand coverage per snippet", () => {
 
       // Debug Output optional:
       console.log(`${name}:`, {
-        operators: result.uniqueOperators,
-        operands: result.uniqueOperands,
         volume: result.volume.toFixed(2),
         effort: result.effort.toFixed(2),
       });

@@ -1,7 +1,8 @@
 import * as fs from "fs";
 import * as ts from "typescript";
 import path from "path";
-import type { FunctionLocation } from "../types";
+import type { FileMetrics, FunctionLocation, FunctionMetrics } from "../types";
+import { computeAggregate } from "../parser/generateFileMetrics";
 
 type FunctionExtraction = {
   name: string;
@@ -100,4 +101,12 @@ export function getAllFiles(dir: string): string[] {
   });
 
   return files;
+}
+
+export function getSubdirectories(rootPath: string): string[] {
+  if (!fs.existsSync(rootPath)) return [];
+  return fs
+    .readdirSync(rootPath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(rootPath, entry.name));
 }
