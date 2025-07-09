@@ -19,7 +19,7 @@ import {
 import path from "path";
 import fs from "fs";
 import type { DirectoryMetrics, FileMetrics } from "./types";
-import { getSubdirectories } from "./metrics/utils";
+import { getSubdirectories, handleCancel } from "./metrics/utils";
 import { computeAggregate } from "./parser/generateFileMetrics";
 
 type OutputFormat = "table" | "json" | "csv" | "all";
@@ -35,10 +35,7 @@ async function main() {
     ],
   });
 
-  if (isCancel(useCase)) {
-    cancel("Abgebrochen.");
-    process.exit(1);
-  }
+  handleCancel(useCase);
 
   const basePath = "./projectsToAnalyse";
   const availableDirs = getSubdirectories(basePath);
@@ -58,10 +55,7 @@ async function main() {
       required: true,
     });
 
-    if (isCancel(dirs)) {
-      cancel("Abgebrochen.");
-      process.exit();
-    }
+    handleCancel(dirs);
 
     const mode = await select({
       message: "🧾 Welche Art der Ausgabe willst du?",
@@ -72,10 +66,7 @@ async function main() {
       ],
     });
 
-    if (isCancel(mode)) {
-      cancel("Abgebrochen.");
-      process.exit();
-    }
+    handleCancel(mode);
 
     const format = await select<OutputFormat>({
       message: "📤 Wie willst du das Ergebnis ausgeben?",
@@ -86,25 +77,19 @@ async function main() {
       ],
     });
 
-    if (isCancel(format)) {
-      cancel("Abgebrochen.");
-      process.exit();
-    }
+    handleCancel(format);
 
     let outputFolder = "";
     if (format !== "table") {
-      const folder = await text({
+      const folder = (await text({
         message:
           "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
         placeholder: "z. B. results/",
         validate: (input) =>
           input.trim() === "" ? "Bitte gib einen Ordnernamen an." : undefined,
-      });
+      })) as string;
 
-      if (isCancel(folder)) {
-        cancel("Abgebrochen.");
-        process.exit();
-      }
+      handleCancel(folder);
 
       outputFolder = folder;
     }
@@ -155,18 +140,16 @@ async function main() {
         break;
     }
   } else {
-    const firstProject = await select({
+    const firstProject = (await select({
       message: "📁 Wähle ein Projekt:",
       options: availableDirs.map((dir) => ({
         label: path.basename(dir),
         value: dir,
       })),
-    });
+    })) as string;
 
-    if (isCancel(firstProject)) {
-      cancel("Abgebrochen.");
-      process.exit(1);
-    }
+    handleCancel(firstProject);
+
     function getAllTsFilesRecursively(dir: string): string[] {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       const files = entries.flatMap((entry) => {
@@ -185,16 +168,13 @@ async function main() {
       })
     );
 
-    const selectedFiles = await multiselect({
+    const selectedFiles = (await multiselect({
       message: "📄 Welche Datei(en) willst du analysieren?",
       options: firstProjectFiles,
       required: true,
-    });
+    })) as string[];
 
-    if (isCancel(selectedFiles)) {
-      cancel("Abgebrochen.");
-      process.exit(1);
-    }
+    handleCancel(selectedFiles);
 
     let allFiles: FileMetrics[] = [];
 
@@ -239,7 +219,7 @@ async function main() {
     });
 
     if (addSecond === "yes") {
-      const secondProject = await select({
+      const secondProject = (await select({
         message: "📁 Wähle das zweite Projekt:",
         options: availableDirs
           .filter((dir) => dir !== firstProject)
@@ -247,12 +227,9 @@ async function main() {
             label: path.basename(dir),
             value: dir,
           })),
-      });
+      })) as string;
 
-      if (isCancel(secondProject)) {
-        cancel("Abgebrochen.");
-        process.exit(1);
-      }
+      handleCancel(secondProject);
 
       const secondProjectFiles = getAllTsFilesRecursively(secondProject).map(
         (filePath) => ({
@@ -293,18 +270,15 @@ async function main() {
 
     let outputFolder = "";
     if (format !== "table") {
-      const folder = await text({
+      const folder = (await text({
         message:
           "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
         placeholder: "z. B. results/",
         validate: (input) =>
           input.trim() === "" ? "Bitte gib einen Ordnernamen an." : undefined,
-      });
+      })) as string;
 
-      if (isCancel(folder)) {
-        cancel("Abgebrochen.");
-        process.exit(1);
-      }
+      handleCancel(folder);
 
       outputFolder = folder;
     }

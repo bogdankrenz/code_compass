@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import * as ts from "typescript";
 import path from "path";
-import type { FileMetrics, FunctionLocation, FunctionMetrics } from "../types";
-import { computeAggregate } from "../parser/generateFileMetrics";
+import type { FunctionLocation } from "../types";
+import { isCancel, cancel } from "@clack/prompts";
 
 type FunctionExtraction = {
   name: string;
@@ -109,4 +109,11 @@ export function getSubdirectories(rootPath: string): string[] {
     .readdirSync(rootPath, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(rootPath, entry.name));
+}
+
+export function handleCancel(value: unknown) {
+  if (isCancel(value)) {
+    cancel("Abgebrochen.");
+    process.exit(1);
+  }
 }
