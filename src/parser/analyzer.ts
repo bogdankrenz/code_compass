@@ -3,6 +3,7 @@ import { extractFunctionsFromFile, getAllFiles } from "../metrics/utils";
 import type { DirectoryMetrics, FunctionMetrics } from "../types";
 import { calculateHalsteadMetricsAST } from "../metrics/halstead";
 import { computeAggregate, generateFileMetrics } from "./generateFileMetrics";
+import { directoryShapers, type Mode } from "./shaper";
 
 export function analyzeFile(filePath: string): FunctionMetrics[] {
   const functions = extractFunctionsFromFile(filePath);
@@ -17,7 +18,16 @@ export function analyzeFile(filePath: string): FunctionMetrics[] {
   }));
 }
 
-export function analyzeDirectory(directoryPath: string): DirectoryMetrics {
+export function analyzeDirectory(directoryPath: string, mode: Mode) {
+  const raw = generateRawDirectoryMetrics(directoryPath);
+  const shapers = directoryShapers[mode](raw);
+  return shapers;
+}
+
+// Erzeuge immer das volle DirectoryMetrics Objekt (Strategie Pattern)
+export function generateRawDirectoryMetrics(
+  directoryPath: string
+): DirectoryMetrics {
   const filePaths = getAllFiles(directoryPath);
   const files = filePaths.map(generateFileMetrics).filter((files) => !!files);
 
@@ -43,8 +53,8 @@ export function analyzeDirectory(directoryPath: string): DirectoryMetrics {
       mccabe: computeAggregate(allMccabe),
       halstead: {
         effort: computeAggregate(allEffort),
-        volume: computeAggregate(allVolume),
         difficulty: computeAggregate(allDifficulty),
+        volume: computeAggregate(allVolume),
       },
       fileCount: files.length,
       functionCount: allFunctions.length,

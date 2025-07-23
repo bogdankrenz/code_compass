@@ -14,15 +14,18 @@ import pc from "picocolors";
 import {
   printComparisonTable,
   printDetailedBreakdown,
-  writeResultsToJson,
+  writeAllResultsToJson,
 } from "./output";
 import path from "path";
 import fs from "fs";
 import type { DirectoryMetrics, FileMetrics } from "./types";
 import { getSubdirectories, handleCancel } from "./metrics/utils";
 import { computeAggregate } from "./parser/generateFileMetrics";
+import type { Mode } from "./parser/shaper";
 
-type OutputFormat = "table" | "json" | "csv" | "all";
+type OutputFormat = "table" | "json" | "csv";
+
+type OutputStrategy = (data: DirectoryMetrics[], outDir?: string) => void;
 
 async function main() {
   intro(pc.cyan("📊 Code Compass"));
@@ -95,8 +98,20 @@ async function main() {
     }
 
     const results = (dirs as string[]).map((dir) =>
-      analyzeDirectory(path.resolve(dir))
+      analyzeDirectory(path.resolve(dir), mode as Mode)
     );
+
+    // const strategiesByFormat: Record<
+    //   OutputFormat,
+    //   Record<Mode, OutputStrategy>
+    // > = {
+    //   table: tableStrategies,
+    //   json: jsonStrategies,
+    //   csv: csvStrategies,
+    // };
+
+    // const strat =
+    //   strategiesByFormat[format as OutputFormat][mode as DirectoryMode];
 
     const cleanedDirectories = results
       .map((dir) => {
@@ -133,7 +148,7 @@ async function main() {
           printDetailedBreakdown(cleanedDirectories);
         break;
       case "json":
-        writeResultsToJson(cleanedDirectories, outputFolder);
+        console.log(results);
         break;
       case "csv":
         console.log("🚧 CSV-Export ist bald verfügbar.");
@@ -329,7 +344,7 @@ async function main() {
           printDetailedBreakdown([directoryObj]);
         break;
       case "json":
-        writeResultsToJson([directoryObj], outputFolder);
+        // writeResultsToJson([directoryObj], outputFolder);
         break;
       case "csv":
         console.log("🚧 CSV-Export ist bald verfügbar.");
