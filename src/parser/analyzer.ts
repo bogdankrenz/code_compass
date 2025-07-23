@@ -3,6 +3,7 @@ import { extractFunctionsFromFile, getAllFiles } from "../metrics/utils";
 import type { DirectoryMetrics, FunctionMetrics } from "../types";
 import { calculateHalsteadMetricsAST } from "../metrics/halstead";
 import { computeAggregate, generateFileMetrics } from "./generateFileMetrics";
+import { directoryShapers, type Mode } from "./shaper";
 
 export function analyzeFile(filePath: string): FunctionMetrics[] {
   const functions = extractFunctionsFromFile(filePath);
@@ -17,39 +18,10 @@ export function analyzeFile(filePath: string): FunctionMetrics[] {
   }));
 }
 
-export function analyzeDirectory(directoryPath: string): DirectoryMetrics {
-  const filePaths = getAllFiles(directoryPath);
-  const files = filePaths.map(generateFileMetrics).filter((files) => !!files);
-
-  const allFunctions = files.flatMap((file) => {
-    if (
-      file.aggregate.halstead.volume.avg > 0 &&
-      file.aggregate.mccabe.avg > 0
-    ) {
-      return file.functions;
-    } else {
-      return [];
-    }
-  });
-  const allMccabe = allFunctions.map((f) => f.mccabe);
-  const allEffort = allFunctions.map((f) => f.halstead.effort);
-  const allVolume = allFunctions.map((f) => f.halstead.volume);
-  const allDifficulty = allFunctions.map((f) => f.halstead.difficulty);
-
-  return {
-    directoryPath,
-    files,
-    aggregate: {
-      mccabe: computeAggregate(allMccabe),
-      halstead: {
-        effort: computeAggregate(allEffort),
-        volume: computeAggregate(allVolume),
-        difficulty: computeAggregate(allDifficulty),
-      },
-      fileCount: files.length,
-      functionCount: allFunctions.length,
-    },
-  };
+export function analyzeDirectory(directoryPath: string, mode: Mode) {
+  const raw = generateRawDirectoryMetrics(directoryPath);
+  const shapers = directoryShapers[mode](raw);
+  return shapers;
 }
 
 // Erzeuge immer das volle DirectoryMetrics Objekt (Strategie Pattern)
