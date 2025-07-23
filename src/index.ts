@@ -14,7 +14,7 @@ import pc from "picocolors";
 import {
   printComparisonTable,
   printDetailedBreakdown,
-  writeResultsToJson,
+  writeAllResultsToJson,
 } from "./output";
 import path from "path";
 import fs from "fs";
@@ -133,7 +133,12 @@ async function main() {
           printDetailedBreakdown(cleanedDirectories);
         break;
       case "json":
-        writeResultsToJson(cleanedDirectories, outputFolder);
+        if (mode === "aggregate")
+          writeResultsToJson(cleanedDirectories, outputFolder);
+        if (mode === "detailed")
+          writeResultsToJson(cleanedDirectories, outputFolder);
+        if (mode === "both")
+          writeAllResultsToJson(cleanedDirectories, outputFolder);
         break;
       case "csv":
         console.log("🚧 CSV-Export ist bald verfügbar.");

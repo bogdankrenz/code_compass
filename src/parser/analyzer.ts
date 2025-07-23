@@ -51,3 +51,41 @@ export function analyzeDirectory(directoryPath: string): DirectoryMetrics {
     },
   };
 }
+
+// Erzeuge immer das volle DirectoryMetrics Objekt (Strategie Pattern)
+export function generateRawDirectoryMetrics(
+  directoryPath: string
+): DirectoryMetrics {
+  const filePaths = getAllFiles(directoryPath);
+  const files = filePaths.map(generateFileMetrics).filter((files) => !!files);
+
+  const allFunctions = files.flatMap((file) => {
+    if (
+      file.aggregate.halstead.volume.avg > 0 &&
+      file.aggregate.mccabe.avg > 0
+    ) {
+      return file.functions;
+    } else {
+      return [];
+    }
+  });
+  const allMccabe = allFunctions.map((f) => f.mccabe);
+  const allEffort = allFunctions.map((f) => f.halstead.effort);
+  const allVolume = allFunctions.map((f) => f.halstead.volume);
+  const allDifficulty = allFunctions.map((f) => f.halstead.difficulty);
+
+  return {
+    directoryPath,
+    files,
+    aggregate: {
+      mccabe: computeAggregate(allMccabe),
+      halstead: {
+        effort: computeAggregate(allEffort),
+        difficulty: computeAggregate(allDifficulty),
+        volume: computeAggregate(allVolume),
+      },
+      fileCount: files.length,
+      functionCount: allFunctions.length,
+    },
+  };
+}

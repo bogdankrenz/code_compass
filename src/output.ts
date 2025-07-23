@@ -70,7 +70,43 @@ export function printDetailedBreakdown(
   }
 }
 
-export function writeResultsToJson(
+export function writeAllResultsToJson(
+  results:
+    | DirectoryMetrics[]
+    | { directoryPath: string; files: FileMetrics[] }[],
+  outDir: string
+) {
+  const absPath = path.resolve(outDir as string);
+  if (!fs.existsSync(absPath)) {
+    fs.mkdirSync(absPath, { recursive: true });
+  }
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const outputPath = path.join(absPath, `metrics-${timestamp}.json`);
+  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2), "utf-8");
+  console.log(pc.green(`\n💾 Ergebnisse wurden gespeichert unter:`));
+  console.log(pc.bold(outputPath));
+}
+
+export function writeDetailedResultsToJson(
+  results:
+    | DirectoryMetrics[]
+    | { directoryPath: string; files: FileMetrics[] }[],
+  outDir: string
+) {
+  const absPath = path.resolve(outDir as string);
+  if (!fs.existsSync(absPath)) {
+    fs.mkdirSync(absPath, { recursive: true });
+  }
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const outputPath = path.join(absPath, `metrics-${timestamp}.json`);
+  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2), "utf-8");
+  console.log(pc.green(`\n💾 Ergebnisse wurden gespeichert unter:`));
+  console.log(pc.bold(outputPath));
+}
+
+export function writeAggregatedResultsToJson(
   results:
     | DirectoryMetrics[]
     | { directoryPath: string; files: FileMetrics[] }[],
