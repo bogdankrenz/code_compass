@@ -24,31 +24,58 @@ import { computeAggregate } from "./parser/generateFileMetrics";
 
 type OutputFormat = "table" | "json" | "csv" | "all";
 
+// TODO: src/...
+// - cli/ -> index.ts, prompts/
+// - io/ fs.ts, logger.ts, config?
+// - core/ analysis/ analyzeProject.ts, halstead.ts, mccabe.ts, ast.ts
+//          models/types.ts, utils/normalaizePath.ts
+// - services/analyze.ts
+// - index.ts (lib export der core-Funktionen)
+
 async function main() {
   intro(pc.cyan("📊 Code Compass"));
+  async function promptUseCase() {
+    const useCase = await select({
+      message: "🔍 Was möchtest du analysieren?",
+      options: [
+        { label: "Projektvergleich (Verzeichnisse)", value: "projects" },
+        { label: "Dateivergleich", value: "files" },
+      ],
+    });
 
-  const useCase = await select({
-    message: "🔍 Was möchtest du analysieren?",
-    options: [
-      { label: "Projektvergleich (Verzeichnisse)", value: "projects" },
-      { label: "Dateivergleich", value: "files" },
-    ],
-  });
-
-  if (isCancel(useCase)) {
-    cancel("Abgebrochen.");
-    process.exit(1);
+    if (isCancel(useCase)) {
+      cancel("Abgebrochen.");
+      process.exit(1);
+    }
+    return useCase;
   }
+
+  // const useCase = await select({
+  //   message: "🔍 Was möchtest du analysieren?",
+  //   options: [
+  //     { label: "Projektvergleich (Verzeichnisse)", value: "projects" },
+  //     { label: "Dateivergleich", value: "files" },
+  //   ],
+  // });
+
+  // if (isCancel(useCase)) {
+  //   cancel("Abgebrochen.");
+  //   process.exit(1);
+  // }
+
+  const useCase = await promptUseCase();
 
   const basePath = "./projectsToAnalyse";
   const availableDirs = getSubdirectories(basePath);
 
-  if (availableDirs.length === 0) {
-    console.log(pc.red("❌ Keine Projekte gefunden im Verzeichnis:"), basePath);
-    process.exit(1);
-  }
-
-  if (useCase === "projects") {
+  async function promptMultipleProjectChoice(availableDirs: string[]) {
+    if (availableDirs.length === 0) {
+      console.log(
+        pc.red("❌ Keine Projekte gefunden im Verzeichnis:"),
+        basePath
+      );
+      process.exit(1);
+    }
     const dirs = await multiselect({
       message: "📁 Welche Projekte willst du analysieren?",
       options: availableDirs.map((dir) => ({
@@ -62,7 +89,27 @@ async function main() {
       cancel("Abgebrochen.");
       process.exit();
     }
+    return dirs;
+  }
 
+  if (useCase === "projects") {
+    //   // Prompts projects
+    //   const dirs = await multiselect({
+    //     message: "📁 Welche Projekte willst du analysieren?",
+    //     options: availableDirs.map((dir) => ({
+    //       label: path.basename(dir),
+    //       value: dir,
+    //     })),
+    //     required: true,
+    //   });
+
+    //   if (isCancel(dirs)) {
+    //     cancel("Abgebrochen.");
+    //     process.exit();
+    //   }
+    const dirs = await promptMultipleProjectChoice(availableDirs);
+
+    // Prompts mode
     const mode = await select({
       message: "🧾 Welche Art der Ausgabe willst du?",
       options: [
@@ -77,6 +124,7 @@ async function main() {
       process.exit();
     }
 
+    // Prompts format
     const format = await select<OutputFormat>({
       message: "📤 Wie willst du das Ergebnis ausgeben?",
       options: [
@@ -93,6 +141,7 @@ async function main() {
 
     let outputFolder = "";
     if (format !== "table") {
+      // Prompts output type
       const folder = await text({
         message:
           "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
