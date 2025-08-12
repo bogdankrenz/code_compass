@@ -109,39 +109,79 @@ async function main() {
     //   }
     const dirs = await promptMultipleProjectChoice(availableDirs);
 
+    async function promptOutputType() {
+      const mode = await select({
+        message: "🧾 Welche Art der Ausgabe willst du?",
+        options: [
+          { value: "aggregate", label: "Nur aggregierte Werte" },
+          { value: "detailed", label: "Nur detaillierte Werte" },
+          { value: "both", label: "Beides anzeigen" },
+        ],
+      });
+
+      if (isCancel(mode)) {
+        cancel("Abgebrochen.");
+        process.exit();
+      }
+
+      return mode;
+    }
     // Prompts mode
-    const mode = await select({
-      message: "🧾 Welche Art der Ausgabe willst du?",
-      options: [
-        { value: "aggregate", label: "Nur aggregierte Werte" },
-        { value: "detailed", label: "Nur detaillierte Werte" },
-        { value: "both", label: "Beides anzeigen" },
-      ],
-    });
+    // const mode = await select({
+    //   message: "🧾 Welche Art der Ausgabe willst du?",
+    //   options: [
+    //     { value: "aggregate", label: "Nur aggregierte Werte" },
+    //     { value: "detailed", label: "Nur detaillierte Werte" },
+    //     { value: "both", label: "Beides anzeigen" },
+    //   ],
+    // });
 
-    if (isCancel(mode)) {
-      cancel("Abgebrochen.");
-      process.exit();
+    // if (isCancel(mode)) {
+    //   cancel("Abgebrochen.");
+    //   process.exit();
+    // }
+    const mode = await promptOutputType();
+
+    async function promptOutputFormat() {
+      const format = await select<OutputFormat>({
+        message: "📤 Wie willst du das Ergebnis ausgeben?",
+        options: [
+          { value: "table", label: "Tabelle im Terminal" },
+          { value: "json", label: "Als JSON-Datei speichern" },
+          {
+            value: "csv",
+            label: "Als CSV-Datei speichern (bald verfügbar)",
+          },
+        ],
+      });
+
+      if (isCancel(format)) {
+        cancel("Abgebrochen.");
+        process.exit();
+      }
+
+      return format;
     }
 
+    const format = await promptOutputFormat();
     // Prompts format
-    const format = await select<OutputFormat>({
-      message: "📤 Wie willst du das Ergebnis ausgeben?",
-      options: [
-        { value: "table", label: "Tabelle im Terminal" },
-        { value: "json", label: "Als JSON-Datei speichern" },
-        { value: "csv", label: "Als CSV-Datei speichern (bald verfügbar)" },
-      ],
-    });
+    // const format = await select<OutputFormat>({
+    //   message: "📤 Wie willst du das Ergebnis ausgeben?",
+    //   options: [
+    //     { value: "table", label: "Tabelle im Terminal" },
+    //     { value: "json", label: "Als JSON-Datei speichern" },
+    //     { value: "csv", label: "Als CSV-Datei speichern (bald verfügbar)" },
+    //   ],
+    // });
 
-    if (isCancel(format)) {
-      cancel("Abgebrochen.");
-      process.exit();
-    }
+    // if (isCancel(format)) {
+    //   cancel("Abgebrochen.");
+    //   process.exit();
+    // }
 
     let outputFolder = "";
     if (format !== "table") {
-      // Prompts output type
+      // Prompts folder name for output
       const folder = await text({
         message:
           "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
@@ -279,6 +319,7 @@ async function main() {
     allFiles.push(...analyzeFiles(selectedFiles));
 
     // 📁 Optional zweites Projekt
+    // Prompt second project
     const addSecond = await select({
       message: "📁 Möchtest du Dateien aus einem zweiten Projekt analysieren?",
       options: [
@@ -322,6 +363,7 @@ async function main() {
     }
 
     // 📋 Ausgabeoptionen
+    // Prompt output mode
     const mode = await select({
       message: "🧾 Welche Art der Ausgabe willst du?",
       options: [
@@ -331,6 +373,7 @@ async function main() {
       ],
     });
 
+    // Prompt format
     const format = await select<OutputFormat>({
       message: "📤 Wie willst du das Ergebnis ausgeben?",
       options: [
