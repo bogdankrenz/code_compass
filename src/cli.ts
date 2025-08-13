@@ -2,12 +2,12 @@
 
 import { analyzeDirectory, analyzeFile } from "./parser/analyzer";
 import {
+  cancel,
   intro,
+  isCancel,
+  multiselect,
   outro,
   select,
-  multiselect,
-  isCancel,
-  cancel,
   text,
 } from "@clack/prompts";
 import pc from "picocolors";
@@ -21,8 +21,13 @@ import fs from "fs";
 import type { DirectoryMetrics, FileMetrics } from "./types";
 import { getSubdirectories } from "./metrics/utils";
 import { computeAggregate } from "./parser/generateFileMetrics";
-
-type OutputFormat = "table" | "json" | "csv" | "all";
+import promptUseCase from "./cli/prompts/useCase";
+import promptMultipleProjectChoice from "./cli/prompts/multipleProjectChoice";
+import promptOutputType from "./cli/prompts/outputType";
+import promptOutputFormat, {
+  type OutputFormat,
+} from "./cli/prompts/outputFormat";
+import promptOutputDirectory from "./cli/prompts/outputDirectory";
 
 // TODO: src/...
 // - cli/ -> index.ts, prompts/
@@ -34,169 +39,19 @@ type OutputFormat = "table" | "json" | "csv" | "all";
 
 async function main() {
   intro(pc.cyan("📊 Code Compass"));
-  async function promptUseCase() {
-    const useCase = await select({
-      message: "🔍 Was möchtest du analysieren?",
-      options: [
-        { label: "Projektvergleich (Verzeichnisse)", value: "projects" },
-        { label: "Dateivergleich", value: "files" },
-      ],
-    });
-
-    if (isCancel(useCase)) {
-      cancel("Abgebrochen.");
-      process.exit(1);
-    }
-    return useCase;
-  }
-
-  // const useCase = await select({
-  //   message: "🔍 Was möchtest du analysieren?",
-  //   options: [
-  //     { label: "Projektvergleich (Verzeichnisse)", value: "projects" },
-  //     { label: "Dateivergleich", value: "files" },
-  //   ],
-  // });
-
-  // if (isCancel(useCase)) {
-  //   cancel("Abgebrochen.");
-  //   process.exit(1);
-  // }
 
   const useCase = await promptUseCase();
-
+  // TODO: basePath as config inside .env
   const basePath = "./projectsToAnalyse";
   const availableDirs = getSubdirectories(basePath);
 
-  async function promptMultipleProjectChoice(availableDirs: string[]) {
-    if (availableDirs.length === 0) {
-      console.log(
-        pc.red("❌ Keine Projekte gefunden im Verzeichnis:"),
-        basePath
-      );
-      process.exit(1);
-    }
-    const dirs = await multiselect({
-      message: "📁 Welche Projekte willst du analysieren?",
-      options: availableDirs.map((dir) => ({
-        label: path.basename(dir),
-        value: dir,
-      })),
-      required: true,
-    });
-
-    if (isCancel(dirs)) {
-      cancel("Abgebrochen.");
-      process.exit();
-    }
-    return dirs;
-  }
-
   if (useCase === "projects") {
-    //   // Prompts projects
-    //   const dirs = await multiselect({
-    //     message: "📁 Welche Projekte willst du analysieren?",
-    //     options: availableDirs.map((dir) => ({
-    //       label: path.basename(dir),
-    //       value: dir,
-    //     })),
-    //     required: true,
-    //   });
-
-    //   if (isCancel(dirs)) {
-    //     cancel("Abgebrochen.");
-    //     process.exit();
-    //   }
     const dirs = await promptMultipleProjectChoice(availableDirs);
-
-    async function promptOutputType() {
-      const mode = await select({
-        message: "🧾 Welche Art der Ausgabe willst du?",
-        options: [
-          { value: "aggregate", label: "Nur aggregierte Werte" },
-          { value: "detailed", label: "Nur detaillierte Werte" },
-          { value: "both", label: "Beides anzeigen" },
-        ],
-      });
-
-      if (isCancel(mode)) {
-        cancel("Abgebrochen.");
-        process.exit();
-      }
-
-      return mode;
-    }
-    // Prompts mode
-    // const mode = await select({
-    //   message: "🧾 Welche Art der Ausgabe willst du?",
-    //   options: [
-    //     { value: "aggregate", label: "Nur aggregierte Werte" },
-    //     { value: "detailed", label: "Nur detaillierte Werte" },
-    //     { value: "both", label: "Beides anzeigen" },
-    //   ],
-    // });
-
-    // if (isCancel(mode)) {
-    //   cancel("Abgebrochen.");
-    //   process.exit();
-    // }
     const mode = await promptOutputType();
-
-    async function promptOutputFormat() {
-      const format = await select<OutputFormat>({
-        message: "📤 Wie willst du das Ergebnis ausgeben?",
-        options: [
-          { value: "table", label: "Tabelle im Terminal" },
-          { value: "json", label: "Als JSON-Datei speichern" },
-          {
-            value: "csv",
-            label: "Als CSV-Datei speichern (bald verfügbar)",
-          },
-        ],
-      });
-
-      if (isCancel(format)) {
-        cancel("Abgebrochen.");
-        process.exit();
-      }
-
-      return format;
-    }
-
     const format = await promptOutputFormat();
-    // Prompts format
-    // const format = await select<OutputFormat>({
-    //   message: "📤 Wie willst du das Ergebnis ausgeben?",
-    //   options: [
-    //     { value: "table", label: "Tabelle im Terminal" },
-    //     { value: "json", label: "Als JSON-Datei speichern" },
-    //     { value: "csv", label: "Als CSV-Datei speichern (bald verfügbar)" },
-    //   ],
-    // });
 
-    // if (isCancel(format)) {
-    //   cancel("Abgebrochen.");
-    //   process.exit();
-    // }
-
-    let outputFolder = "";
-    if (format !== "table") {
-      // Prompts folder name for output
-      const folder = await text({
-        message:
-          "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
-        placeholder: "z. B. results/",
-        validate: (input) =>
-          input.trim() === "" ? "Bitte gib einen Ordnernamen an." : undefined,
-      });
-
-      if (isCancel(folder)) {
-        cancel("Abgebrochen.");
-        process.exit();
-      }
-
-      outputFolder = folder;
-    }
+    const outputFolder =
+      format !== "table" ? await promptOutputDirectory() : "";
 
     const results = (dirs as string[]).map((dir) =>
       analyzeDirectory(path.resolve(dir))
