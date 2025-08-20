@@ -1,5 +1,5 @@
 import { directoryShapers } from "./parser/shaper";
-import type { DirectoryMetrics, FileMetrics } from "./types";
+import type { DirectoryMetrics } from "./types";
 
 // 1) Erzeuge einen kleinsten DirectoryMetrics-Stub
 const stubMetrics: DirectoryMetrics = {

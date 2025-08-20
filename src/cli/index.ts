@@ -30,10 +30,9 @@ import promptOutputFormat, {
 import promptOutputDirectory from "../cli/prompts/outputDirectory";
 
 // TODO: src/...
-// - cli/ -> index.ts, prompts/
 // - io/ fs.ts, logger.ts, config?
 // - core/ analysis/ analyzeProject.ts, halstead.ts, mccabe.ts, ast.ts
-//          models/types.ts, utils/normalaizePath.ts
+//          models/types.ts, utils/normalaizePath.ts, shaper.ts
 // - services/analyze.ts
 // - index.ts (lib export der core-Funktionen)
 
