@@ -31,10 +31,14 @@ import promptOutputFormat, {
   type OutputFormat,
 } from "../cli/prompts/outputFormat";
 import promptOutputDirectory from "../cli/prompts/outputDirectory";
+import {
+  shapeAggregate,
+  shapeBoth,
+  shapeDetailed,
+  type AggregateDirectoryMetrics,
+} from "../parser/shaper.ts";
 
 // TODO: src/...
-// - core/ analysis/ analyzeProject.ts, halstead.ts, mccabe.ts, ast.ts
-//          models/types.ts, utils/normalaizePath.ts
 // - services/analyze.ts
 // - index.ts (lib export der core-Funktionen)
 
@@ -85,15 +89,32 @@ async function main() {
       });
     });
 
+    // TODO: Refactor typing and case handling
+    let modedDirs = [];
+
+    if (mode === "aggregate") {
+      modedDirs = cleanedDirectories.map((dir) =>
+        shapeAggregate(dir)
+      ) as DirectoryMetrics[];
+    } else if (mode === "detailed") {
+      modedDirs = cleanedDirectories.map((dir) =>
+        shapeDetailed(dir)
+      ) as DirectoryMetrics[];
+    } else if (mode === "both") {
+      modedDirs = cleanedDirectories.map((dir) =>
+        shapeBoth(dir)
+      ) as DirectoryMetrics[];
+    }
+
     switch (format) {
       case "table":
         if (mode === "aggregate" || mode === "both")
-          printComparisonTable(cleanedDirectories);
+          printComparisonTable(modedDirs);
         if (mode === "detailed" || mode === "both")
-          printDetailedBreakdown(cleanedDirectories);
+          printDetailedBreakdown(modedDirs);
         break;
       case "json":
-        writeResultsToJson(cleanedDirectories, outputFolder as string);
+        writeResultsToJson(modedDirs, outputFolder as string);
         break;
       case "csv":
         console.log("🚧 CSV-Export ist bald verfügbar.");

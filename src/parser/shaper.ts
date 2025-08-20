@@ -29,7 +29,9 @@ export type DirectoryShaper<M extends Mode> = (
   raw: DirectoryMetrics
 ) => ShaperMap[M];
 
-function shapeAggregate(raw: DirectoryMetrics): AggregateDirectoryMetrics {
+export function shapeAggregate(
+  raw: DirectoryMetrics
+): AggregateDirectoryMetrics {
   return {
     directoryPath: raw.directoryPath,
     aggregate: raw.aggregate,
@@ -46,7 +48,7 @@ export function shapeDetailed(raw: DirectoryMetrics): DetailedDirectoryMetrics {
   };
 }
 
-function shapeBoth(raw: DirectoryMetrics): DirectoryMetrics {
+export function shapeBoth(raw: DirectoryMetrics): DirectoryMetrics {
   return raw;
 }
 
