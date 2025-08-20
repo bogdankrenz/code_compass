@@ -5,7 +5,7 @@ import type {
   FileMetrics,
   AggregateMetrics,
   DirectoryMetrics,
-} from "./core/analysis/models/types";
+} from "../core/analysis/models/types";
 
 export function printComparisonTable(results: DirectoryMetrics[]) {
   console.log(pc.bold("\n📁 Vergleich der aggregierten Werte:"));

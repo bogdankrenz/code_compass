@@ -1,6 +1,7 @@
-import { cancel, isCancel, multiselect } from "@clack/prompts";
+import { multiselect } from "@clack/prompts";
 import path from "path";
 import pc from "picocolors";
+import { handleCancel } from "../utils";
 
 export default async function promptMultipleProjectChoice(
   availableDirs: string[]
@@ -21,9 +22,6 @@ export default async function promptMultipleProjectChoice(
     required: true,
   });
 
-  if (isCancel(dirs)) {
-    cancel("Abgebrochen.");
-    process.exit();
-  }
+  handleCancel(dirs);
   return dirs;
 }

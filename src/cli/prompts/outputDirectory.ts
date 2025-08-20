@@ -1,4 +1,5 @@
 import { cancel, isCancel, text } from "@clack/prompts";
+import { handleCancel } from "../utils";
 
 export default async function promptOutputDirectory() {
   const folder = await text({
@@ -8,10 +9,6 @@ export default async function promptOutputDirectory() {
       input.trim() === "" ? "Bitte gib einen Ordnernamen an." : undefined,
   });
 
-  if (isCancel(folder)) {
-    cancel("Abgebrochen.");
-    process.exit();
-  }
-
+  handleCancel(folder);
   return folder;
 }

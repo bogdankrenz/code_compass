@@ -1,5 +1,5 @@
-import { directoryShapers } from "./parser/shaper";
-import type { DirectoryMetrics } from "./core/analysis/models/types";
+import { directoryShapers } from "../src/parser/shaper";
+import type { DirectoryMetrics } from "../src/core/analysis/models/types";
 
 // 1) Erzeuge einen kleinsten DirectoryMetrics-Stub
 const stubMetrics: DirectoryMetrics = {

@@ -15,14 +15,14 @@ import {
   printComparisonTable,
   printDetailedBreakdown,
   writeResultsToJson,
-} from "../output";
+} from "../io/output.ts";
 import path from "path";
 import fs from "fs";
 import type {
   DirectoryMetrics,
   FileMetrics,
 } from "../core/analysis/models/types.ts";
-import { getSubdirectories } from "../core/utils.ts";
+import { getSubdirectories } from "../io/fs.ts";
 import { computeAggregate } from "../parser/generateFileMetrics";
 import promptUseCase from "../cli/prompts/useCase";
 import promptMultipleProjectChoice from "../cli/prompts/multipleProjectChoice";
@@ -33,7 +33,6 @@ import promptOutputFormat, {
 import promptOutputDirectory from "../cli/prompts/outputDirectory";
 
 // TODO: src/...
-// - io/ fs.ts, logger.ts, config?
 // - core/ analysis/ analyzeProject.ts, halstead.ts, mccabe.ts, ast.ts
 //          models/types.ts, utils/normalaizePath.ts
 // - services/analyze.ts
@@ -94,7 +93,7 @@ async function main() {
           printDetailedBreakdown(cleanedDirectories);
         break;
       case "json":
-        writeResultsToJson(cleanedDirectories, outputFolder);
+        writeResultsToJson(cleanedDirectories, outputFolder as string);
         break;
       case "csv":
         console.log("🚧 CSV-Export ist bald verfügbar.");
