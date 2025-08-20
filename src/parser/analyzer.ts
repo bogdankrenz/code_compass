@@ -1,7 +1,7 @@
-import { calculateMcCabeComplexityAST } from "../metrics/mccabe";
-import { extractFunctionsFromFile, getAllFiles } from "../metrics/utils";
+import { calculateMcCabeComplexityAST } from "../core/mccabe";
+import { extractFunctionsFromFile, getAllFiles } from "../core/utils";
 import type { DirectoryMetrics, FunctionMetrics } from "../types";
-import { calculateHalsteadMetricsAST } from "../metrics/halstead";
+import { calculateHalsteadMetricsAST } from "../core/halstead";
 import { computeAggregate, generateFileMetrics } from "./generateFileMetrics";
 
 export function analyzeFile(filePath: string): FunctionMetrics[] {

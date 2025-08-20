@@ -19,7 +19,7 @@ import {
 import path from "path";
 import fs from "fs";
 import type { DirectoryMetrics, FileMetrics } from "../types";
-import { getSubdirectories } from "../metrics/utils";
+import { getSubdirectories } from "../core/utils";
 import { computeAggregate } from "../parser/generateFileMetrics";
 import promptUseCase from "../cli/prompts/useCase";
 import promptMultipleProjectChoice from "../cli/prompts/multipleProjectChoice";
@@ -32,7 +32,7 @@ import promptOutputDirectory from "../cli/prompts/outputDirectory";
 // TODO: src/...
 // - io/ fs.ts, logger.ts, config?
 // - core/ analysis/ analyzeProject.ts, halstead.ts, mccabe.ts, ast.ts
-//          models/types.ts, utils/normalaizePath.ts, shaper.ts
+//          models/types.ts, utils/normalaizePath.ts
 // - services/analyze.ts
 // - index.ts (lib export der core-Funktionen)
 
