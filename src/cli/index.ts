@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 
-import { analyzeDirectory, analyzeFile } from "./parser/analyzer";
+import { analyzeDirectory, analyzeFile } from "../parser/analyzer.ts";
 import {
+  cancel,
   intro,
+  isCancel,
+  multiselect,
   outro,
   select,
-  multiselect,
-  isCancel,
-  cancel,
   text,
 } from "@clack/prompts";
 import pc from "picocolors";
@@ -15,84 +15,42 @@ import {
   printComparisonTable,
   printDetailedBreakdown,
   writeResultsToJson,
-} from "./output";
+} from "../output";
 import path from "path";
 import fs from "fs";
-import type { DirectoryMetrics, FileMetrics } from "./types";
-import { getSubdirectories, handleCancel } from "./metrics/utils";
-import { computeAggregate } from "./parser/generateFileMetrics";
+import type { DirectoryMetrics, FileMetrics } from "../types";
+import { getSubdirectories } from "../core/utils.ts";
+import { computeAggregate } from "../parser/generateFileMetrics";
+import promptUseCase from "../cli/prompts/useCase";
+import promptMultipleProjectChoice from "../cli/prompts/multipleProjectChoice";
+import promptOutputType from "../cli/prompts/outputType";
+import promptOutputFormat, {
+  type OutputFormat,
+} from "../cli/prompts/outputFormat";
+import promptOutputDirectory from "../cli/prompts/outputDirectory";
 
-type OutputFormat = "table" | "json" | "csv" | "all";
+// TODO: src/...
+// - io/ fs.ts, logger.ts, config?
+// - core/ analysis/ analyzeProject.ts, halstead.ts, mccabe.ts, ast.ts
+//          models/types.ts, utils/normalaizePath.ts
+// - services/analyze.ts
+// - index.ts (lib export der core-Funktionen)
 
 async function main() {
   intro(pc.cyan("📊 Code Compass"));
 
-  const useCase = await select({
-    message: "🔍 Was möchtest du analysieren?",
-    options: [
-      { label: "Projektvergleich (Verzeichnisse)", value: "projects" },
-      { label: "Dateivergleich", value: "files" },
-    ],
-  });
-
-  handleCancel(useCase);
-
+  const useCase = await promptUseCase();
+  // TODO: basePath as config inside .env
   const basePath = "./projectsToAnalyse";
   const availableDirs = getSubdirectories(basePath);
 
-  if (availableDirs.length === 0) {
-    console.log(pc.red("❌ Keine Projekte gefunden im Verzeichnis:"), basePath);
-    process.exit(1);
-  }
-
   if (useCase === "projects") {
-    const dirs = await multiselect({
-      message: "📁 Welche Projekte willst du analysieren?",
-      options: availableDirs.map((dir) => ({
-        label: path.basename(dir),
-        value: dir,
-      })),
-      required: true,
-    });
+    const dirs = await promptMultipleProjectChoice(availableDirs);
+    const mode = await promptOutputType();
+    const format = await promptOutputFormat();
 
-    handleCancel(dirs);
-
-    const mode = await select({
-      message: "🧾 Welche Art der Ausgabe willst du?",
-      options: [
-        { value: "aggregate", label: "Nur aggregierte Werte" },
-        { value: "detailed", label: "Nur detaillierte Werte" },
-        { value: "both", label: "Beides anzeigen" },
-      ],
-    });
-
-    handleCancel(mode);
-
-    const format = await select<OutputFormat>({
-      message: "📤 Wie willst du das Ergebnis ausgeben?",
-      options: [
-        { value: "table", label: "Tabelle im Terminal" },
-        { value: "json", label: "Als JSON-Datei speichern" },
-        { value: "csv", label: "Als CSV-Datei speichern (bald verfügbar)" },
-      ],
-    });
-
-    handleCancel(format);
-
-    let outputFolder = "";
-    if (format !== "table") {
-      const folder = (await text({
-        message:
-          "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
-        placeholder: "z. B. results/",
-        validate: (input) =>
-          input.trim() === "" ? "Bitte gib einen Ordnernamen an." : undefined,
-      })) as string;
-
-      handleCancel(folder);
-
-      outputFolder = folder;
-    }
+    const outputFolder =
+      format !== "table" ? await promptOutputDirectory() : "";
 
     const results = (dirs as string[]).map((dir) =>
       analyzeDirectory(path.resolve(dir))
@@ -140,16 +98,18 @@ async function main() {
         break;
     }
   } else {
-    const firstProject = (await select({
+    const firstProject = await select({
       message: "📁 Wähle ein Projekt:",
       options: availableDirs.map((dir) => ({
         label: path.basename(dir),
         value: dir,
       })),
-    })) as string;
+    });
 
-    handleCancel(firstProject);
-
+    if (isCancel(firstProject)) {
+      cancel("Abgebrochen.");
+      process.exit(1);
+    }
     function getAllTsFilesRecursively(dir: string): string[] {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       const files = entries.flatMap((entry) => {
@@ -168,13 +128,16 @@ async function main() {
       })
     );
 
-    const selectedFiles = (await multiselect({
+    const selectedFiles = await multiselect({
       message: "📄 Welche Datei(en) willst du analysieren?",
       options: firstProjectFiles,
       required: true,
-    })) as string[];
+    });
 
-    handleCancel(selectedFiles);
+    if (isCancel(selectedFiles)) {
+      cancel("Abgebrochen.");
+      process.exit(1);
+    }
 
     let allFiles: FileMetrics[] = [];
 
@@ -210,6 +173,7 @@ async function main() {
     allFiles.push(...analyzeFiles(selectedFiles));
 
     // 📁 Optional zweites Projekt
+    // Prompt second project
     const addSecond = await select({
       message: "📁 Möchtest du Dateien aus einem zweiten Projekt analysieren?",
       options: [
@@ -219,7 +183,7 @@ async function main() {
     });
 
     if (addSecond === "yes") {
-      const secondProject = (await select({
+      const secondProject = await select({
         message: "📁 Wähle das zweite Projekt:",
         options: availableDirs
           .filter((dir) => dir !== firstProject)
@@ -227,9 +191,12 @@ async function main() {
             label: path.basename(dir),
             value: dir,
           })),
-      })) as string;
+      });
 
-      handleCancel(secondProject);
+      if (isCancel(secondProject)) {
+        cancel("Abgebrochen.");
+        process.exit(1);
+      }
 
       const secondProjectFiles = getAllTsFilesRecursively(secondProject).map(
         (filePath) => ({
@@ -250,6 +217,7 @@ async function main() {
     }
 
     // 📋 Ausgabeoptionen
+    // Prompt output mode
     const mode = await select({
       message: "🧾 Welche Art der Ausgabe willst du?",
       options: [
@@ -259,6 +227,7 @@ async function main() {
       ],
     });
 
+    // Prompt format
     const format = await select<OutputFormat>({
       message: "📤 Wie willst du das Ergebnis ausgeben?",
       options: [
@@ -270,15 +239,18 @@ async function main() {
 
     let outputFolder = "";
     if (format !== "table") {
-      const folder = (await text({
+      const folder = await text({
         message:
           "📁 In welchem Ordner sollen die Ergebnisse gespeichert werden?",
         placeholder: "z. B. results/",
         validate: (input) =>
           input.trim() === "" ? "Bitte gib einen Ordnernamen an." : undefined,
-      })) as string;
+      });
 
-      handleCancel(folder);
+      if (isCancel(folder)) {
+        cancel("Abgebrochen.");
+        process.exit(1);
+      }
 
       outputFolder = folder;
     }
