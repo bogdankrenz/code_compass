@@ -19,7 +19,7 @@ import {
 import path from "path";
 import fs from "fs";
 import type { DirectoryMetrics, FileMetrics } from "../types";
-import { getSubdirectories } from "../core/utils";
+import { getSubdirectories } from "../core/utils.ts";
 import { computeAggregate } from "../parser/generateFileMetrics";
 import promptUseCase from "../cli/prompts/useCase";
 import promptMultipleProjectChoice from "../cli/prompts/multipleProjectChoice";

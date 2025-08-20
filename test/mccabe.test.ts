@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { calculateMcCabeComplexityAST } from "../src/core/mccabe";
+import { calculateMcCabeComplexityAST } from "../src/core/mccabe
 import {
   basicFunction,
   ifElseFunction,

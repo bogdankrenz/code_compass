@@ -1,6 +1,6 @@
 // Wir haben unterschiedliche Ebenen auf welche wir die Metriken anwenden können
 
-import type { HalsteadMetrics } from "./core/halstead";
+import type { HalsteadMetrics } from "./core/halstead
 
 export type FunctionLocation = {
   startLine: number;

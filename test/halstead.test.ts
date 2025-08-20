@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import * as Fixtures from "../test/fixtures/halsteadCases";
-import { calculateHalsteadMetricsAST } from "../src/core/halstead";
+import { calculateHalsteadMetricsAST } from "../src/core/halstead
 
 describe("Halstead: Operator/Operand coverage per snippet", () => {
   for (const [name, code] of Object.entries(Fixtures)) {
