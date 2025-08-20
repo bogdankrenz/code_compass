@@ -1,7 +1,11 @@
 import fs from "fs";
 import path from "path";
 import pc from "picocolors";
-import type { FileMetrics, AggregateMetrics, DirectoryMetrics } from "./types";
+import type {
+  FileMetrics,
+  AggregateMetrics,
+  DirectoryMetrics,
+} from "./core/analysis/models/types";
 
 export function printComparisonTable(results: DirectoryMetrics[]) {
   console.log(pc.bold("\n📁 Vergleich der aggregierten Werte:"));

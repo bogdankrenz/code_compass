@@ -18,7 +18,10 @@ import {
 } from "../output";
 import path from "path";
 import fs from "fs";
-import type { DirectoryMetrics, FileMetrics } from "../types";
+import type {
+  DirectoryMetrics,
+  FileMetrics,
+} from "../core/analysis/models/types.ts";
 import { getSubdirectories } from "../core/utils.ts";
 import { computeAggregate } from "../parser/generateFileMetrics";
 import promptUseCase from "../cli/prompts/useCase";

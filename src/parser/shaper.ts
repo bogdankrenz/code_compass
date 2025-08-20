@@ -1,6 +1,9 @@
 // Shapes the data to the desired output
 // Currently supporting: 'aggregate', 'detailed', 'both';
-import type { DirectoryMetrics, FileMetrics } from "../types";
+import type {
+  DirectoryMetrics,
+  FileMetrics,
+} from "../core/analysis/models/types";
 
 export type FullDirectoryMetrics = DirectoryMetrics;
 

@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as ts from "typescript";
 import path from "path";
-import type { FunctionLocation } from "../types";
+import type { FunctionLocation } from "./analysis/models/types";
 import { isCancel, cancel } from "@clack/prompts";
 
 type FunctionExtraction = {
