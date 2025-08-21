@@ -11,20 +11,7 @@ bun install
 ## 🚀 Nutzung
 
 ```bash
-bun run src/cli.ts <pfad-zur-datei>
-```
-
-Beispiel:
-
-```bash
-bun run src/cli.ts test/example.ts
-```
-
-Alternativ direkt ausführbar machen:
-
-```bash
-chmod +x src/cli.ts
-./src/cli.ts test/example.ts
+bun run src/cli/index.ts
 ```
 
 ## 🛠 Ziel
@@ -37,7 +24,7 @@ Das Tool soll in der Lage sein, grundlegende Komplexitätsmetriken zu berechnen,
 - ✅ AST-Parsing mit Metrikberechnung
 - ✅ Halstead- & McCabe-Metriken
 - ✅ Möglichkeit zur Analyse ganzer Ordner
-- ✅ Optional: Ausgabe als JSON oder CSV
+- ✅ Ausgabe im CLI oder als JSON
 
 ## 🔧 Tech Stack
 
@@ -62,20 +49,7 @@ bun install
 ## 🚀 Usage
 
 ```bash
-bun run src/cli.ts <path-to-file>
-```
-
-Example:
-
-```bash
-bun run src/cli.ts test/example.ts
-```
-
-Alternatively, make it directly executable:
-
-```bash
-chmod +x src/cli.ts
-./src/cli.ts test/example.ts
+bun run src/cli/index.ts
 ```
 
 ## 🛠 Purpose
@@ -88,7 +62,7 @@ The tool is designed to calculate basic code complexity metrics to support devel
 - ✅ AST parsing with metric computation
 - ✅ Halstead & McCabe metrics
 - ✅ Ability to analyze entire folders
-- ✅ Optional: Output as JSON or CSV
+- ✅ Output inside CLI or as JSON
 
 ## 🔧 Tech Stack
 
@@ -106,15 +80,16 @@ The tool is designed to calculate basic code complexity metrics to support devel
             - Detaillierte Daten 🛠 (Problem: Viele Dateien, wird im Terminal nicht angezeigt)
             - Komplette Daten 🛠 (Aggregierte Daten werden oben angezeigt, Detailierte Daten sind zu lang)
         - JSON:
-            - Aggregierte Daten
-            - Detaillierte Daten
-            - Komplette Daten
-    - Dateivergleich
+            - Aggregierte Daten ✅
+            - Detaillierte Daten ✅
+            - Komplette Daten ✅
+    - Dateivergleich 🛠
         - Terminal:
-            - Aggregierte Daten
-            - Detaillierte Daten
-            - Komplette Daten
+            - Aggregierte Daten 🛠
+            - Detaillierte Daten 🛠
+            - Komplette Daten 🛠
         - JSON:
-            - Aggregierte Daten
-            - Detaillierte Daten
-            - Komplette Daten
+            - Aggregierte Daten 🛠
+            - Detaillierte Daten 🛠
+            - Komplette Daten 🛠
+        - Dateivergleich wird richtig berechnet, die korrekte Ausgabe ist WIP

@@ -1,4 +1,5 @@
-import { cancel, isCancel, select } from "@clack/prompts";
+import { select } from "@clack/prompts";
+import { handleCancel } from "../utils";
 
 export type OutputFormat = "table" | "json" | "csv" | "all";
 
@@ -15,10 +16,6 @@ export default async function promptOutputFormat() {
     ],
   });
 
-  if (isCancel(format)) {
-    cancel("Abgebrochen.");
-    process.exit();
-  }
-
+  handleCancel(format);
   return format;
 }

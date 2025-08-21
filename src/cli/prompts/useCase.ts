@@ -1,4 +1,5 @@
 import { cancel, isCancel, select } from "@clack/prompts";
+import { handleCancel } from "../utils";
 
 export default async function promptUseCase() {
   const useCase = await select({
@@ -9,9 +10,6 @@ export default async function promptUseCase() {
     ],
   });
 
-  if (isCancel(useCase)) {
-    cancel("Abgebrochen.");
-    process.exit(1);
-  }
+  handleCancel(useCase);
   return useCase;
 }

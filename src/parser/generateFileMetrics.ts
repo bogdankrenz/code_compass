@@ -1,5 +1,9 @@
 import { analyzeFile } from "./analyzer";
-import type { AggregateMetrics, FileMetrics, FunctionMetrics } from "../types";
+import type {
+  AggregateMetrics,
+  FileMetrics,
+  FunctionMetrics,
+} from "../core/analysis/models/types";
 
 export function computeAggregate(values: number[]): AggregateMetrics {
   const total = values.reduce((sum, value) => sum + value, 0);

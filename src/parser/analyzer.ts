@@ -1,6 +1,10 @@
 import { calculateMcCabeComplexityAST } from "../core/analysis/mccabe";
-import { extractFunctionsFromFile, getAllFiles } from "../core/utils";
-import type { DirectoryMetrics, FunctionMetrics } from "../types";
+import { extractFunctionsFromFile } from "./extractFunctions";
+import { getAllFiles } from "../io/fs";
+import type {
+  DirectoryMetrics,
+  FunctionMetrics,
+} from "../core/analysis/models/types";
 import { calculateHalsteadMetricsAST } from "../core/analysis/halstead";
 import { computeAggregate, generateFileMetrics } from "./generateFileMetrics";
 
