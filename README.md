@@ -1,4 +1,4 @@
-# Code Metrics CLI
+# Code Compass CLI
 
 Ein kleines CLI-Tool zur Analyse von TypeScript-Code anhand von Metriken wie McCabe-Komplexität und Halstead-Metriken.
 
