@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { analyzeDirectory, analyzeFile } from "../parser/analyzer.ts";
+import { analyzeDirectory, analyzeFile } from "../service/analyzer.ts";
 import {
   cancel,
   intro,
@@ -23,7 +23,7 @@ import type {
   FileMetrics,
 } from "../core/analysis/models/types.ts";
 import { getSubdirectories } from "../io/fs.ts";
-import { computeAggregate } from "../parser/generateFileMetrics";
+import { computeAggregate } from "../service/generateFileMetrics.ts";
 import promptUseCase from "../cli/prompts/useCase";
 import promptMultipleProjectChoice from "../cli/prompts/multipleProjectChoice";
 import promptOutputType from "../cli/prompts/outputType";
@@ -36,7 +36,7 @@ import {
   shapeBoth,
   shapeDetailed,
   type AggregateDirectoryMetrics,
-} from "../parser/shaper.ts";
+} from "../service/shaper.ts";
 
 // TODO: src/...
 // - services/analyze.ts
