@@ -1,4 +1,4 @@
-import { directoryShapers } from "../src/parser/shaper";
+import { directoryShapers } from "../src/service/shaper";
 import type { DirectoryMetrics } from "../src/core/analysis/models/types";
 
 // 1) Erzeuge einen kleinsten DirectoryMetrics-Stub
